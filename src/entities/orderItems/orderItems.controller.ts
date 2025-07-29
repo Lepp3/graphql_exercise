@@ -1,5 +1,5 @@
 import { Controller, Param, Post, Put, Body } from '@nestjs/common';
-import { BaseController } from 'src/common/base.controller';
+import { BaseController } from 'src/common/base.resolver';
 import { CreateOrderItemsInput, OrderItemsService } from './orderItems.service';
 import { OrderItems } from './orderItems.entity';
 import { CreateOrderItemsDto, UpdateOrderItemsDto } from './orderItems.schema';

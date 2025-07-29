@@ -1,10 +1,10 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { User } from '../user/user.entity';
-import { Order } from '../order/order.entity';
-import { BaseType } from 'src/common/baseType.types';
+import { Entity, Column } from 'typeorm';
+import { BaseEntity } from 'src/common/base.entity';
+// import { User } from '../user/user.entity';
+// import { Order } from '../order/order.entity';
 
 @Entity()
-export class Invoice extends BaseType {
+export class Invoice extends BaseEntity {
   @Column({ type: 'date', default: () => 'CURRENT_DATE' })
   date: Date;
 
@@ -14,14 +14,14 @@ export class Invoice extends BaseType {
   @Column({ name: 'user_id', type: 'uuid' })
   userId: string;
 
-  @ManyToOne(() => User, (user) => user.invoices)
-  @JoinColumn({ name: 'user_id' })
-  user: User;
+  // @ManyToOne(() => User, (user) => user.invoices)
+  // @JoinColumn({ name: 'user_id' })
+  // user: User;
 
   @Column({ name: 'order_id', type: 'uuid' })
   orderId: string;
 
-  @ManyToOne(() => Order, (order) => order.invoices)
-  @JoinColumn({ name: 'order_id' })
-  order: Order;
+  // @ManyToOne(() => Order, (order) => order.invoices)
+  // @JoinColumn({ name: 'order_id' })
+  // order: Order;
 }

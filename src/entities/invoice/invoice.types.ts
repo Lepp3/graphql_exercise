@@ -15,3 +15,18 @@ export class InvoiceType extends BaseType {
   @Field()
   orderId: string;
 }
+
+ObjectType();
+export class UpdateInvoiceType extends BaseType {
+  @Field(() => Date, { nullable: true })
+  date?: Date;
+
+  @Field({ nullable: true })
+  invoiceNumber?: string;
+
+  @Field({ nullable: true })
+  userId?: string;
+
+  @Field({ nullable: true })
+  orderId?: string;
+}

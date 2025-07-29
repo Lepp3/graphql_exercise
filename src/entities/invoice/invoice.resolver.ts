@@ -1,57 +1,53 @@
-import { Controller, Post, Put, Param, Body } from '@nestjs/common';
-import { BaseController } from 'src/common/base.controller';
+import { BaseResolver } from 'src/common/base.resolver';
 import { CreateInvoiceInput, InvoiceService } from './invoice.service';
-import { Invoice } from './invoice.entity';
-import { CreateInvoiceDto, UpdateInvoiceDto } from './invoice.schema';
-import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { CurrentUser, AuthUser } from 'src/decorators/currentUser.decorator';
-import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
-import { CreateInvoiceSchema, UpdateInvoiceSchema } from './invoice.schema';
-@ApiBearerAuth('Authorization')
-@Controller('invoice')
-export class InvoiceController extends BaseController<Invoice> {
-  constructor(protected readonly invoiceService: InvoiceService) {
+import { InvoiceType, UpdateInvoiceType } from './invoice.types';
+import {
+  Resolver,
+  Args,
+  Mutation,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql';
+import { OrderService } from '../order/order.service';
+import { UserService } from '../user/user.service';
+import { OrderType } from '../order/order.types';
+import { UserType } from '../user/user.types';
+
+@Resolver(() => InvoiceType)
+export class InvoiceController extends BaseResolver<InvoiceType> {
+  constructor(
+    protected readonly invoiceService: InvoiceService,
+    private readonly orderService: OrderService,
+    private readonly userService: UserService,
+  ) {
     super(invoiceService);
   }
 
-  @Post()
-  @ApiBody({
-    type: CreateInvoiceDto,
-    examples: {
-      default: {
-        value: {
-          orderId: '',
-          date: '',
-          invoiceNumber: '',
-        },
-      },
-    },
-  })
-  create(
+  @Mutation(() => InvoiceType)
+  async createInvoice(
     @CurrentUser() user: AuthUser,
-    @Body(new ZodValidationPipe(CreateInvoiceSchema)) dto: CreateInvoiceInput,
-  ) {
-    return this.invoiceService.create(user, dto);
+    @Args('input') input: CreateInvoiceInput,
+  ): Promise<InvoiceType> {
+    return this.invoiceService.create(user, input);
   }
 
-  @Put(':id')
-  @ApiBody({
-    type: UpdateInvoiceDto,
-    examples: {
-      default: {
-        value: {
-          orderId: '',
-          date: '',
-          invoiceNumber: '',
-        },
-      },
-    },
-  })
-  update(
+  @Mutation(() => InvoiceType)
+  async updateInvoice(
     @CurrentUser() user: AuthUser,
-    @Param('id') id: string,
-    @Body(new ZodValidationPipe(UpdateInvoiceSchema)) dto: UpdateInvoiceDto,
-  ) {
-    return this.invoiceService.update(user, id, dto);
+    @Args('id') id: string,
+    @Args('input') input: UpdateInvoiceType,
+  ): Promise<InvoiceType> {
+    return this.invoiceService.update(user, id, input);
+  }
+
+  @ResolveField(() => OrderType)
+  async order(@Parent() invoice: InvoiceType) {
+    return this.orderService.getById(invoice.orderId);
+  }
+
+  @ResolveField(() => UserType)
+  async user(@Parent() invoice: InvoiceType) {
+    return this.userService.getById(invoice.userId);
   }
 }

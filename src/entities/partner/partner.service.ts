@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, FindManyOptions } from 'typeorm';
 import { Partner } from './partner.entity';
 import { BaseService } from 'src/common/base.service';
 import { z } from 'zod';
@@ -23,6 +23,12 @@ export class PartnerService extends BaseService<Partner> {
     @InjectRepository(Order) private readonly orderRepo: Repository<Order>,
   ) {
     super(repo);
+  }
+
+  async getByCompanyId(companyId: string): Promise<Partner[]> {
+    return this.repo.find({
+      where: { companyId },
+    } as FindManyOptions<Partner>);
   }
 
   async getMostLoyalCustomer(): Promise<MostLoyalCustomer | null> {

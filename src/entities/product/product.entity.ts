@@ -1,7 +1,7 @@
-import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Entity, Column } from 'typeorm';
 import { BaseEntity } from 'src/common/base.entity';
-import { Company } from '../company/company.entity';
-import { OrderItems } from '../orderItems/orderItems.entity';
+// import { Company } from '../company/company.entity';
+// import { OrderItems } from '../orderItems/orderItems.entity';
 import { SupportType } from '../warehouse/warehouse.entity';
 
 @Entity()
@@ -21,10 +21,10 @@ export class Product extends BaseEntity {
   @Column({ name: 'company_id', type: 'uuid' })
   companyId: string;
 
-  @ManyToOne(() => Company, (company) => company.products)
-  @JoinColumn({ name: 'company_id' })
-  company: Company;
+  // @ManyToOne(() => Company, (company) => company.products)
+  // @JoinColumn({ name: 'company_id' })
+  // company: Company;
 
-  @OneToMany(() => OrderItems, (orderItem) => orderItem.product)
-  orderItems: OrderItems[];
+  // @OneToMany(() => OrderItems, (orderItem) => orderItem.product)
+  // orderItems: OrderItems[];
 }

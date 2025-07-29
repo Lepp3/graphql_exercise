@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 import { Invoice } from './invoice.entity';
 import { BaseService } from 'src/common/base.service';
 import { z } from 'zod';
@@ -30,6 +30,12 @@ export class InvoiceService extends BaseService<Invoice> {
     );
     const invoice = this.repo.create(dto);
     return this.repo.save(invoice);
+  }
+
+  async getByCompanyId(companyId: string): Promise<Invoice[]> {
+    return this.repo.find({
+      where: { companyId },
+    } as FindManyOptions<Invoice>);
   }
 
   async update(

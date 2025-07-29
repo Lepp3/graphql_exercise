@@ -1,6 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, FindManyOptions } from 'typeorm';
 import { Order, OrderType } from './order.entity';
 import { BaseService } from 'src/common/base.service';
 import { z } from 'zod';
@@ -27,6 +27,12 @@ export class OrderService extends BaseService<Order> {
   ) {
     super(repo);
     this.orderItemsRepo = orderItemsRepo;
+  }
+
+  async getByCompanyId(companyId: string): Promise<Order[]> {
+    return this.repo.find({
+      where: { companyId },
+    } as FindManyOptions<Order>);
   }
 
   async createOrderWithItems(user: AuthUser, dto: CreateOrderInput) {

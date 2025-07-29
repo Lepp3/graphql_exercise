@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, FindManyOptions } from 'typeorm';
 import { Product } from './product.entity';
 import { BaseService } from 'src/common/base.service';
 import { z } from 'zod';
@@ -22,6 +22,12 @@ export class ProductService extends BaseService<Product> {
     private readonly orderItemsRepo: Repository<OrderItems>,
   ) {
     super(repo);
+  }
+
+  async getByCompanyId(companyId: string): Promise<Product[]> {
+    return this.repo.find({
+      where: { companyId },
+    } as FindManyOptions<Product>);
   }
 
   async getTopSellingProducts(

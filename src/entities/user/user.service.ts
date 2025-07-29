@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, Repository } from 'typeorm';
+import { Repository, FindManyOptions } from 'typeorm';
 import { User } from './user.entity';
 import { BaseService } from 'src/common/base.service';
 import { z } from 'zod';
@@ -11,7 +11,7 @@ import {
   ClientUserDto,
 } from './update-user.schema';
 import * as bcrypt from 'bcrypt';
-import { validateUniqueField } from 'src/common/validators/uniqueName.validator';
+// import { validateUniqueField } from 'src/common/validators/uniqueName.validator';
 
 export type CreateUserInput = z.infer<typeof CreateUserSchema>;
 export type UpdateUserInput = z.infer<typeof UpdateUserSchema>;
@@ -22,15 +22,21 @@ export class UserService extends BaseService<User> {
     super(repo);
   }
 
-  protected override async beforeCreate(
-    data: DeepPartial<User>,
-    companyId: string,
-  ) {
-    await validateUniqueField(
-      this.repo,
-      { username: data.username!, companyId },
-      'Username',
-    );
+  // protected override async beforeCreate(
+  //   data: DeepPartial<User>,
+  //   companyId: string,
+  // ) {
+  //   await validateUniqueField(
+  //     this.repo,
+  //     { username: data.username!, companyId },
+  //     'Username',
+  //   );
+  // }
+
+  async getByCompanyId(companyId: string): Promise<User[]> {
+    return this.repo.find({
+      where: { companyId },
+    } as FindManyOptions<User>);
   }
 
   async getByUsername(username: string, withPassword = false) {

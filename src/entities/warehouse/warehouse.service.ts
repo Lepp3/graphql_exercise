@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, FindManyOptions } from 'typeorm';
 import { Warehouse } from './warehouse.entity';
 import { BaseService } from 'src/common/base.service';
 import { z } from 'zod';
@@ -25,6 +25,12 @@ export class WarehouseService extends BaseService<Warehouse> {
     @InjectRepository(Order) private readonly orderRepo: Repository<Order>,
   ) {
     super(repo);
+  }
+
+  async getByCompanyId(companyId: string): Promise<Warehouse[]> {
+    return this.repo.find({
+      where: { companyId },
+    } as FindManyOptions<Warehouse>);
   }
 
   async getHighestStockPerWarehouse(): Promise<HighestStockPerWarehouse[]> {
