@@ -1,10 +1,10 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { BaseEntity } from 'src/common/base.entity';
 import { User } from '../user/user.entity';
 import { Order } from '../order/order.entity';
+import { BaseType } from 'src/common/baseType.types';
 
 @Entity()
-export class Invoice extends BaseEntity {
+export class Invoice extends BaseType {
   @Column({ type: 'date', default: () => 'CURRENT_DATE' })
   date: Date;
 

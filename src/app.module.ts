@@ -15,12 +15,21 @@ import { ProductModule } from './entities/product/product.module';
 import { OrderModule } from './entities/order/order.module';
 import { OrderItemsModule } from './entities/orderItems/orderItems.module';
 import { InvoiceModule } from './entities/invoice/invoice.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
+      imports: [
+        ConfigModule,
+        GraphQLModule.forRoot<ApolloDriverConfig>({
+          driver: ApolloDriver,
+          autoSchemaFile: 'src/schema.gql',
+          playground: true,
+        }),
+      ],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
         const db = config.get<{
