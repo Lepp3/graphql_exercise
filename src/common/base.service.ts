@@ -19,7 +19,6 @@ export abstract class BaseService<T extends BaseEntity> {
   }
 
   async getById(id: string, companyId?: string): Promise<T> {
-    console.log('log from getbyId', companyId);
     const item = await this.repo.findOne({
       where: { id, ...(companyId ? { companyId } : {}) } as FindOptionsWhere<T>,
     });

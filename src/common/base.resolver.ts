@@ -6,7 +6,7 @@ import { BaseType } from './baseType.types';
 import { AuthUser, CurrentUser } from 'src/decorators/currentUser.decorator';
 
 @Resolver()
-export abstract class BaseController<T extends BaseType> {
+export abstract class BaseResolver<T extends BaseType> {
   constructor(protected readonly service: BaseService<T>) {}
 
   @Query(() => [Object])

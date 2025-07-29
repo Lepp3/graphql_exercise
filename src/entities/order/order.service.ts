@@ -106,7 +106,7 @@ export class OrderService extends BaseService<Order> {
     });
 
     if (!items || !Array.isArray(items)) {
-      return { order: existingOrder };
+      return existingOrder;
     }
 
     const itemsToUpdate = items.filter((item) => item.id);
@@ -144,6 +144,6 @@ export class OrderService extends BaseService<Order> {
       );
     }
 
-    return { order: existingOrder };
+    return existingOrder;
   }
 }

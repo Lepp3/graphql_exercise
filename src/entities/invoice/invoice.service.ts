@@ -38,6 +38,10 @@ export class InvoiceService extends BaseService<Invoice> {
     } as FindManyOptions<Invoice>);
   }
 
+  async findAllByOrderId(orderId: string): Promise<Invoice[]> {
+    return this.repo.find({ where: { orderId } } as FindManyOptions<Invoice>);
+  }
+
   async update(
     user: AuthUser,
     id: string,
