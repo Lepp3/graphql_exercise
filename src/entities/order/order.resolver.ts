@@ -1,12 +1,7 @@
 import { BaseResolver } from 'src/common/base.resolver';
-import {
-  CreateOrderInput,
-  OrderService,
-  UpdateOrderInput,
-} from './order.service';
+import { OrderService } from './order.service';
 import { Order } from './order.entity';
 import { CurrentUser, AuthUser } from 'src/decorators/currentUser.decorator';
-
 import { InvoiceType } from '../invoice/invoice.types';
 import { WarehouseType } from '../warehouse/warehouse.types';
 import { PartnerType } from '../partner/partner.types';
@@ -17,19 +12,22 @@ import { InvoiceService } from '../invoice/invoice.service';
 import { WarehouseService } from '../warehouse/warehouse.service';
 import { PartnerService } from '../partner/partner.service';
 import { UserService } from '../user/user.service';
-import { OrderType } from './order.types';
+import { OrderType, CreateOrderType, UpdateOrderType } from './order.types';
 import {
   ResolveField,
   Resolver,
   Args,
   Parent,
   Mutation,
+  Query,
 } from '@nestjs/graphql';
 import { CompanyService } from '../company/company.service';
 import { OrderItemsService } from '../orderItems/orderItems.service';
+import { Roles } from 'src/decorators/roles.decorator';
+import { UserRole } from '../user/user.entity';
 
 @Resolver(() => OrderType)
-export class OrderController extends BaseResolver<Order> {
+export class OrderResolver extends BaseResolver<Order> {
   constructor(
     protected readonly orderService: OrderService,
     private readonly invoiceService: InvoiceService,
@@ -42,21 +40,42 @@ export class OrderController extends BaseResolver<Order> {
     super(orderService);
   }
 
-  @Mutation()
-  create(
-    @CurrentUser() user: AuthUser,
-    @Args('input') input: CreateOrderInput,
-  ) {
+  @Query(() => [OrderType], { name: 'getAllOrders' })
+  override getAll(@CurrentUser() user: AuthUser) {
+    return super.getAll(user);
+  }
+
+  @Query(() => OrderType, { name: 'getOrderById' })
+  override getById(@CurrentUser() user: AuthUser, @Args('id') id: string) {
+    return super.getById(user, id);
+  }
+
+  @Mutation(() => OrderType, { name: 'createOrder' })
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
+  create(@CurrentUser() user: AuthUser, @Args('input') input: CreateOrderType) {
     return this.orderService.createOrderWithItems(user, input);
   }
 
-  @Mutation(() => OrderType)
+  @Mutation(() => OrderType, { name: 'updateOrder' })
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   async updateOrder(
     @CurrentUser() user: AuthUser,
     @Args('id') id: string,
-    @Args('input') input: UpdateOrderInput,
+    @Args('input') input: UpdateOrderType,
   ): Promise<OrderType> {
     return await this.orderService.updateOrderWithItems(user, input, id);
+  }
+
+  @Mutation(() => Boolean, { name: 'deleteOrder' })
+  @Roles(UserRole.OWNER)
+  override delete(@CurrentUser() user: AuthUser, @Args('id') id: string) {
+    return super.delete(user, id);
+  }
+
+  @Mutation(() => Boolean, { name: 'softDeleteOrder' })
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
+  override softDelete(@CurrentUser() user: AuthUser, @Args('id') id: string) {
+    return super.softDelete(user, id);
   }
 
   @ResolveField(() => [InvoiceType])

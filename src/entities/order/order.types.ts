@@ -1,11 +1,7 @@
-import { ObjectType, Field, registerEnumType } from '@nestjs/graphql';
+import { ObjectType, Field, ID, InputType } from '@nestjs/graphql';
 import { BaseType } from 'src/common/baseType.types';
 import { OrderType as OrderTypeEnum } from './order.entity';
-
-registerEnumType(OrderTypeEnum, {
-  name: 'OrderType',
-  description: 'the type of order',
-});
+import { CreateOrderItemsType } from '../orderItems/orderItems.type';
 
 @ObjectType()
 export class OrderType extends BaseType {
@@ -26,4 +22,46 @@ export class OrderType extends BaseType {
 
   @Field()
   warehouseId: string;
+}
+
+@InputType()
+export class CreateOrderType {
+  @Field(() => ID, { nullable: true })
+  id?: string;
+
+  @Field(() => OrderTypeEnum)
+  type: OrderTypeEnum;
+
+  @Field(() => Date)
+  date: Date;
+
+  @Field(() => ID)
+  warehouseId: string;
+
+  @Field(() => ID)
+  partnerId: string;
+
+  @Field(() => [CreateOrderItemsType])
+  items: CreateOrderItemsType[];
+}
+
+@InputType()
+export class UpdateOrderType {
+  @Field(() => ID)
+  id: string;
+
+  @Field(() => OrderTypeEnum, { nullable: true })
+  type?: OrderTypeEnum;
+
+  @Field(() => Date, { nullable: true })
+  date?: Date;
+
+  @Field(() => ID, { nullable: true })
+  warehouseId?: string;
+
+  @Field(() => ID, { nullable: true })
+  partnerId?: string;
+
+  @Field(() => [CreateOrderItemsType], { nullable: true })
+  items?: CreateOrderItemsType[];
 }

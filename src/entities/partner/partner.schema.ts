@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { PartnerType } from './partner.entity';
-import { createZodDto } from 'nestjs-zod';
 
 export const CreatePartnerSchema = z.object({
   id: z.uuid().optional(),
@@ -10,5 +9,3 @@ export const CreatePartnerSchema = z.object({
 });
 
 export const UpdatePartnerSchema = CreatePartnerSchema.partial();
-export class CreatePartnerDto extends createZodDto(CreatePartnerSchema) {}
-export class UpdatePartnerDto extends createZodDto(UpdatePartnerSchema) {}

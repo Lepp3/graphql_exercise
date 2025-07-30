@@ -1,25 +1,23 @@
 import { Resolver, Mutation, Args } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
-import { RegisterWithCompanyInput } from './register.schema';
-import { LoginInput } from './login.schema';
 import { Public } from 'src/decorators/public.decorator';
-import { AuthType } from './auth.types';
+import { AuthType, RegisterWithCompanyType, LoginType } from './auth.types';
 
 @Resolver()
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
-  @Mutation(() => AuthType)
+  @Mutation(() => AuthType, { name: 'register' })
   async register(
-    @Args('input') input: RegisterWithCompanyInput,
+    @Args('input') input: RegisterWithCompanyType,
   ): Promise<AuthType> {
     return await this.authService.register(input);
   }
 
   @Public()
-  @Mutation(() => AuthType)
-  async login(@Args('input') input: LoginInput): Promise<AuthType> {
+  @Mutation(() => AuthType, { name: 'login' })
+  async login(@Args('input') input: LoginType): Promise<AuthType> {
     return await this.authService.login(input);
   }
 }

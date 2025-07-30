@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { OrderType } from './order.entity';
-import { createZodDto } from 'nestjs-zod';
 import { CreateOrderItemsSchema } from '../orderItems/orderItems.schema';
 
 export const CreateOrderSchema = z.object({
@@ -13,5 +12,3 @@ export const CreateOrderSchema = z.object({
 });
 
 export const UpdateOrderSchema = CreateOrderSchema.partial();
-export class CreateOrderDto extends createZodDto(CreateOrderSchema) {}
-export class UpdateOrderDto extends createZodDto(UpdateOrderSchema) {}

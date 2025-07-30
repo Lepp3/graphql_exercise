@@ -5,7 +5,7 @@ import { UserService } from 'src/entities/user/user.service';
 import { LoginInput } from './login.schema';
 import { RegisterWithCompanyInput } from './register.schema';
 import { CompanyService } from 'src/entities/company/company.service';
-import { User, UserRole } from 'src/entities/user/user.entity';
+import { UserRole } from 'src/entities/user/user.entity';
 import { validateUniqueField } from 'src/common/validators/uniqueName.validator';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -14,7 +14,6 @@ import { Company } from 'src/entities/company/company.entity';
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User) private readonly userRepo: Repository<User>,
     @InjectRepository(Company)
     private readonly companyRepo: Repository<Company>,
     private userService: UserService,

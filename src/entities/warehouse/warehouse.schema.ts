@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { SupportType } from './warehouse.entity';
-import { createZodDto } from 'nestjs-zod';
 
 export const CreateWarehouseSchema = z.object({
   id: z.uuid().optional(),
@@ -9,5 +8,3 @@ export const CreateWarehouseSchema = z.object({
 });
 
 export const UpdateWarehouseSchema = CreateWarehouseSchema.partial();
-export class CreateWarehouseDto extends createZodDto(CreateWarehouseSchema) {}
-export class UpdateWarehouseDto extends createZodDto(UpdateWarehouseSchema) {}

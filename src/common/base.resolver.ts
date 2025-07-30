@@ -1,40 +1,27 @@
-import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
+import { Resolver } from '@nestjs/graphql';
 import { BaseService } from './base.service';
-import { Roles } from 'src/decorators/roles.decorator';
-import { UserRole } from 'src/entities/user/user.entity';
 import { BaseType } from './baseType.types';
-import { AuthUser, CurrentUser } from 'src/decorators/currentUser.decorator';
+import { AuthUser } from 'src/decorators/currentUser.decorator';
 
 @Resolver()
 export abstract class BaseResolver<T extends BaseType> {
   constructor(protected readonly service: BaseService<T>) {}
 
-  @Query(() => [Object])
-  getAll(@CurrentUser() user: AuthUser): Promise<T[]> {
+  getAll(user: AuthUser): Promise<T[]> {
+    console.log('user in base resolver', user);
     return this.service.getAll(user.companyId);
   }
 
-  @Query(() => Object, { name: 'getById' })
-  getById(@CurrentUser() user: AuthUser, @Args('id') id: string): Promise<T> {
+  getById(user: AuthUser, id: string): Promise<T> {
     return this.service.getById(id, user.companyId);
   }
 
-  @Mutation(() => Boolean)
-  @Roles(UserRole.OWNER)
-  async delete(
-    @CurrentUser() user: AuthUser,
-    @Args('id') id: string,
-  ): Promise<boolean> {
+  async delete(user: AuthUser, id: string): Promise<boolean> {
     const result = await this.service.delete(id, user.companyId);
     return (result.affected ?? 0) > 0;
   }
 
-  @Mutation(() => Boolean)
-  @Roles(UserRole.OWNER, UserRole.OPERATOR)
-  async softDelete(
-    @CurrentUser() user: AuthUser,
-    @Args('id') id: string,
-  ): Promise<boolean> {
+  async softDelete(user: AuthUser, id: string): Promise<boolean> {
     const result = await this.service.softDelete(id, user.companyId);
     return (result.affected ?? 0) > 0;
   }

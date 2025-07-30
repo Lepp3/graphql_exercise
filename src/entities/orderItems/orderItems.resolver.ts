@@ -4,23 +4,26 @@ import {
   Args,
   Parent,
   Mutation,
+  Query,
 } from '@nestjs/graphql';
 import { BaseResolver } from 'src/common/base.resolver';
-import {
-  CreateOrderItemsWithOrderIdInput,
-  OrderItemsService,
-} from './orderItems.service';
+import { OrderItemsService } from './orderItems.service';
 import { OrderItems } from './orderItems.entity';
-import { UpdateOrderItemsDto } from './orderItems.schema';
 import { CurrentUser, AuthUser } from 'src/decorators/currentUser.decorator';
 import { OrderService } from '../order/order.service';
 import { ProductService } from '../product/product.service';
 import { ProductType } from '../product/product.types';
 import { OrderType } from '../order/order.types';
-import { OrderItemsType } from './orderItems.type';
+import {
+  OrderItemsType,
+  UpdateOrderItemsType,
+  CreateOrderItemsWithOrderIdType,
+} from './orderItems.type';
+import { Roles } from 'src/decorators/roles.decorator';
+import { UserRole } from '../user/user.entity';
 
 @Resolver(() => OrderItemsType)
-export class OrderItemsController extends BaseResolver<OrderItems> {
+export class OrderItemsResolver extends BaseResolver<OrderItems> {
   constructor(
     protected readonly orderItemsService: OrderItemsService,
     private readonly orderService: OrderService,
@@ -28,21 +31,46 @@ export class OrderItemsController extends BaseResolver<OrderItems> {
   ) {
     super(orderItemsService);
   }
-  @Mutation()
+
+  @Query(() => [OrderItemsType], { name: 'getAllOrderItems' })
+  override getAll(@CurrentUser() user: AuthUser) {
+    return super.getAll(user);
+  }
+
+  @Query(() => OrderItemsType, { name: 'getOrderItemsById' })
+  override getById(@CurrentUser() user: AuthUser, @Args('id') id: string) {
+    return super.getById(user, id);
+  }
+
+  @Mutation(() => OrderItemsType, { name: 'createOrderItems' })
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   create(
     @CurrentUser() user: AuthUser,
-    @Args('input') dto: CreateOrderItemsWithOrderIdInput,
-  ) {
+    @Args('input') dto: CreateOrderItemsWithOrderIdType,
+  ): Promise<OrderItemsType> {
     return this.orderItemsService.create(user, dto);
   }
 
-  @Mutation(':id')
+  @Mutation(() => OrderItemsType, { name: 'updateOrderItems' })
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   update(
     @CurrentUser() user: AuthUser,
     @Args('id') id: string,
-    @Args('input') dto: UpdateOrderItemsDto,
-  ) {
+    @Args('input') dto: UpdateOrderItemsType,
+  ): Promise<OrderItemsType> {
     return this.orderItemsService.update(user, id, dto);
+  }
+
+  @Mutation(() => Boolean, { name: 'deleteOrderItems' })
+  @Roles(UserRole.OWNER)
+  override delete(@CurrentUser() user: AuthUser, @Args('id') id: string) {
+    return super.delete(user, id);
+  }
+
+  @Mutation(() => Boolean, { name: 'softDeleteOrderItems' })
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
+  override softDelete(@CurrentUser() user: AuthUser, @Args('id') id: string) {
+    return super.softDelete(user, id);
   }
 
   @ResolveField(() => OrderType)

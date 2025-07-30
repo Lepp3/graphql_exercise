@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { createZodDto } from 'nestjs-zod';
 
 export const RegisterWithCompanySchema = z.object({
   companyName: z.string().min(4),
@@ -12,7 +11,3 @@ export const RegisterWithCompanySchema = z.object({
 export type RegisterWithCompanyInput = z.infer<
   typeof RegisterWithCompanySchema
 >;
-
-export class RegisterWithCompanyDto extends createZodDto(
-  RegisterWithCompanySchema,
-) {}

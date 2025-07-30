@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { createZodDto } from 'nestjs-zod';
 
 export const CreateCompanySchema = z.object({
   id: z.uuid().optional(),
@@ -8,5 +7,3 @@ export const CreateCompanySchema = z.object({
 });
 
 export const UpdateCompanySchema = CreateCompanySchema.partial();
-export class CreateCompanyDto extends createZodDto(CreateCompanySchema) {}
-export class UpdateCompanyDto extends createZodDto(UpdateCompanySchema) {}

@@ -1,11 +1,6 @@
-import { ObjectType, Field, registerEnumType } from '@nestjs/graphql';
+import { ObjectType, Field, InputType, ID } from '@nestjs/graphql';
 import { BaseType } from 'src/common/baseType.types';
 import { UserRole } from './user.entity';
-
-registerEnumType(UserRole, {
-  name: 'User Role',
-  description: 'The role of the user',
-});
 
 @ObjectType()
 export class UserType extends BaseType {
@@ -20,4 +15,58 @@ export class UserType extends BaseType {
 
   @Field()
   companyId: string;
+}
+
+@InputType()
+export class CreateUserType {
+  @Field()
+  name: string;
+
+  @Field()
+  username: string;
+
+  @Field()
+  password: string;
+
+  @Field(() => UserRole)
+  role: UserRole;
+
+  @Field(() => ID)
+  companyId: string;
+}
+
+@InputType()
+export class ClientUserType {
+  @Field()
+  name: string;
+
+  @Field()
+  username: string;
+
+  @Field()
+  password: string;
+
+  @Field(() => UserRole)
+  role: UserRole;
+}
+
+@InputType()
+export class UpdateUserType {
+  @Field(() => ID)
+  id: string;
+
+  @Field({ nullable: true })
+  name?: string;
+
+  @Field({ nullable: true })
+  username?: string;
+
+  @Field({ nullable: true })
+  password?: string;
+
+  @Field(() => UserRole, { nullable: true })
+  role?: UserRole;
+
+  @Field(() => ID, { nullable: true })
+  companyId?: string;
 }

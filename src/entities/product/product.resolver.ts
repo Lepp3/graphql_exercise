@@ -7,17 +7,20 @@ import {
   Query,
 } from '@nestjs/graphql';
 import { BaseResolver } from 'src/common/base.resolver';
+import { ProductService } from './product.service';
 import {
-  CreateProductInput,
-  ProductService,
-  UpdateProductInput,
-} from './product.service';
-import { ProductType, TopSellingProductType } from './product.types';
+  ProductType,
+  TopSellingProductType,
+  CreateProductType,
+  UpdateProductType,
+} from './product.types';
 import { CurrentUser, AuthUser } from 'src/decorators/currentUser.decorator';
 import { CompanyService } from '../company/company.service';
 import { CompanyType } from '../company/company.types';
 import { OrderItemsService } from '../orderItems/orderItems.service';
 import { OrderItemsType } from '../orderItems/orderItems.type';
+import { Roles } from 'src/decorators/roles.decorator';
+import { UserRole } from '../user/user.entity';
 
 @Resolver(() => ProductType)
 export class ProductResolver extends BaseResolver<ProductType> {
@@ -29,21 +32,43 @@ export class ProductResolver extends BaseResolver<ProductType> {
     super(productService);
   }
 
-  @Mutation(() => ProductType)
+  @Query(() => [ProductType], { name: 'getAllProducts' })
+  override getAll(@CurrentUser() user: AuthUser) {
+    return super.getAll(user);
+  }
+
+  @Query(() => ProductType, { name: 'getProductById' })
+  override getById(@CurrentUser() user: AuthUser, @Args('id') id: string) {
+    return super.getById(user, id);
+  }
+
+  @Mutation(() => ProductType, { name: 'createProduct' })
   async createProduct(
     @CurrentUser() user: AuthUser,
-    @Args('input') input: CreateProductInput,
+    @Args('input') input: CreateProductType,
   ): Promise<ProductType> {
     return await this.productService.create(user, input);
   }
 
-  @Mutation(() => ProductType)
+  @Mutation(() => ProductType, { name: 'updateProduct' })
   async updateProduct(
     @CurrentUser() user: AuthUser,
     @Args('id') id: string,
-    @Args('input') input: UpdateProductInput,
+    @Args('input') input: UpdateProductType,
   ): Promise<ProductType> {
     return await this.productService.update(user, id, input);
+  }
+
+  @Mutation(() => Boolean, { name: 'deleteProduct' })
+  @Roles(UserRole.OWNER)
+  override delete(@CurrentUser() user: AuthUser, @Args('id') id: string) {
+    return super.delete(user, id);
+  }
+
+  @Mutation(() => Boolean, { name: 'softDeleteProduct' })
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
+  override softDelete(@CurrentUser() user: AuthUser, @Args('id') id: string) {
+    return super.softDelete(user, id);
   }
 
   @Query(() => [TopSellingProductType])

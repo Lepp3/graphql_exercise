@@ -8,12 +8,10 @@ import {
   CreateUserSchema,
   UpdateUserSchema,
   ClientUserInput,
-  ClientUserDto,
-} from './update-user.schema';
+} from './user.schema';
 import * as bcrypt from 'bcrypt';
 import { AuthUser } from 'src/decorators/currentUser.decorator';
 import { validateUniqueField } from 'src/common/validators/uniqueName.validator';
-// import { validateUniqueField } from 'src/common/validators/uniqueName.validator';
 
 export type CreateUserInput = z.infer<typeof CreateUserSchema>;
 export type UpdateUserInput = z.infer<typeof UpdateUserSchema>;
@@ -49,7 +47,7 @@ export class UserService extends BaseService<User> {
   }
 
   async addUserToCompany(
-    dto: ClientUserDto & ClientUserInput,
+    dto: ClientUserInput,
     companyId: string,
     userId: string,
   ) {

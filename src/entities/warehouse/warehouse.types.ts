@@ -1,14 +1,14 @@
-import { ObjectType, Field } from '@nestjs/graphql';
+import { ObjectType, Field, InputType, ID } from '@nestjs/graphql';
 import { BaseType } from 'src/common/baseType.types';
-import { SupportType } from './warehouse.entity';
+import { SupportType as SupportTypeEnum } from './warehouse.entity';
 
 @ObjectType()
 export class WarehouseType extends BaseType {
   @Field()
   name: string;
 
-  @Field(() => SupportType)
-  supportType: SupportType;
+  @Field(() => SupportTypeEnum)
+  supportType: SupportTypeEnum;
 
   @Field()
   companyId: string;
@@ -22,4 +22,28 @@ export class HighestStockPerWarehouseType {
   nameOfProduct: string;
   @Field()
   maxProduct: number;
+}
+
+@InputType()
+export class CreateWarehouseType {
+  @Field(() => ID, { nullable: true })
+  id?: string;
+
+  @Field()
+  name: string;
+
+  @Field(() => SupportTypeEnum)
+  supportType: SupportTypeEnum;
+}
+
+@InputType()
+export class UpdateWarehouseType {
+  @Field(() => ID)
+  id: string;
+
+  @Field({ nullable: true })
+  name?: string;
+
+  @Field(() => SupportTypeEnum, { nullable: true })
+  supportType?: SupportTypeEnum;
 }

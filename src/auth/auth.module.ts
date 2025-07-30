@@ -4,9 +4,13 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { AuthResolver } from './auth.controller';
+
 import { UserModule } from 'src/entities/user/user.module';
 import { CompanyModule } from 'src/entities/company/company.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from 'src/entities/user/user.entity';
+import { Company } from 'src/entities/company/company.entity';
+import { AuthResolver } from './auth.resolver';
 
 @Module({
   imports: [
@@ -19,10 +23,10 @@ import { CompanyModule } from 'src/entities/company/company.module';
         signOptions: { expiresIn: '1d' },
       }),
     }),
+    TypeOrmModule.forFeature([User, Company]),
     UserModule,
     CompanyModule,
   ],
-  providers: [AuthService, JwtStrategy],
-  controllers: [AuthResolver],
+  providers: [AuthService, JwtStrategy, AuthResolver],
 })
 export class AuthModule {}

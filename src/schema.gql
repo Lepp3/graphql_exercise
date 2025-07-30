@@ -1,0 +1,360 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type CompanyType {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime
+  modifiedBy: String
+  name: String!
+  location: String!
+  users: [UserType!]!
+  partners: [PartnerType!]!
+  warehouses: [WarehouseType!]!
+  products: [ProductType!]!
+  orders: [OrderType!]!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type UserType {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime
+  modifiedBy: String
+  name: String!
+  username: String!
+  role: UserRole!
+  companyId: String!
+  company: CompanyType!
+  orders: [OrderType!]!
+  invoices: [InvoiceType!]!
+}
+
+"""The role of the user"""
+enum UserRole {
+  OWNER
+  OPERATOR
+  VIEWER
+}
+
+type OrderItemsType {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime
+  modifiedBy: String
+  quantity: String!
+  orderId: String!
+  productId: String!
+  order: OrderType!
+  product: ProductType!
+}
+
+type OrderType {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime
+  modifiedBy: String
+  type: OrderCategory!
+  date: DateTime!
+  companyId: String!
+  userId: String!
+  partnerId: String!
+  warehouseId: String!
+  invoices: [InvoiceType!]!
+  orderItems: [OrderItemsType!]!
+  user: UserType!
+  company: CompanyType!
+  warehouse: WarehouseType!
+  partner: PartnerType!
+}
+
+"""the type of order"""
+enum OrderCategory {
+  SHIPMENT
+  DELIVERY
+}
+
+type PartnerType {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime
+  modifiedBy: String
+  name: String!
+  partnerType: BusinessPartnerType!
+  companyId: String!
+  company: CompanyType!
+  orders: [OrderType!]!
+}
+
+"""The type of business partner"""
+enum BusinessPartnerType {
+  SUPPLIER
+  CUSTOMER
+}
+
+type MostLoyalCustomerType {
+  companyId: String!
+  customerName: String!
+  totalOrders: String!
+}
+
+type WarehouseType {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime
+  modifiedBy: String
+  name: String!
+  supportType: ProductSupportType!
+  companyId: String!
+  company: CompanyType!
+  orders: [OrderType!]!
+}
+
+"""The type of products a warehouse supports"""
+enum ProductSupportType {
+  LIQUID
+  SOLID
+}
+
+type HighestStockPerWarehouseType {
+  warehouseName: String!
+  nameOfProduct: String!
+  maxProduct: Float!
+}
+
+type ProductType {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime
+  modifiedBy: String
+  name: String!
+  type: ProductSupportType!
+  price: String!
+  companyId: String!
+  code: String!
+  company: CompanyType!
+  orderItems: [OrderItemsType!]!
+}
+
+type TopSellingProductType {
+  productName: String!
+  totalSold: Float!
+}
+
+type InvoiceType {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime
+  modifiedBy: String
+  date: DateTime!
+  invoiceNumber: String!
+  userId: String!
+  orderId: String!
+  order: OrderType!
+  user: UserType!
+}
+
+type AuthType {
+  accessToken: String!
+}
+
+type Query {
+  getCompanyById(id: String!): CompanyType!
+  getAllUsers: [UserType!]!
+  getUserById(id: String!): UserType!
+  getAllPartners: [PartnerType!]!
+  getPartnerById(id: String!): PartnerType!
+  mostLoyalCustomer: MostLoyalCustomerType
+  highestStock: [HighestStockPerWarehouseType!]!
+  getAllWarehouses: [WarehouseType!]!
+  getWarehouseById(id: String!): WarehouseType!
+  getAllProducts: [ProductType!]!
+  getProductById(id: String!): ProductType!
+  bestSellers: [TopSellingProductType!]!
+  getAllOrders: [OrderType!]!
+  getOrderById(id: String!): OrderType!
+  getAllOrderItems: [OrderItemsType!]!
+  getOrderItemsById(id: String!): OrderItemsType!
+  getAllInvoices: [InvoiceType!]!
+  getInvoiceById(id: String!): InvoiceType!
+}
+
+type Mutation {
+  updateCompany(id: String!, input: UpdateCompanyType!): CompanyType!
+  softDeleteCompany(id: String!): Boolean!
+  deleteCompany(id: String!): Boolean!
+  addUserToCompany(input: ClientUserType!): UserType!
+  updateUser(id: String!, input: UpdateUserType!): UserType!
+  deleteUser(id: String!): Boolean!
+  softDeleteUser(id: String!): Boolean!
+  createPartner(input: CreatePartnerType!): PartnerType!
+  updatePartner(id: String!, input: UpdatePartnerType!): PartnerType!
+  deletePartner(id: String!): Boolean!
+  softDeletePartner(id: String!): Boolean!
+  createWarehouse(input: CreateWarehouseType!): WarehouseType!
+  updateWarehouse(id: String!, input: UpdateWarehouseType!): WarehouseType!
+  deleteWarehouse(id: String!): Boolean!
+  softDeleteWarehouse(id: String!): Boolean!
+  createProduct(input: CreateProductType!): ProductType!
+  updateProduct(id: String!, input: UpdateProductType!): ProductType!
+  deleteProduct(id: String!): Boolean!
+  softDeleteProduct(id: String!): Boolean!
+  createOrder(input: CreateOrderType!): OrderType!
+  updateOrder(id: String!, input: UpdateOrderType!): OrderType!
+  deleteOrder(id: String!): Boolean!
+  softDeleteOrder(id: String!): Boolean!
+  createOrderItems(input: CreateOrderItemsWithOrderIdType!): OrderItemsType!
+  updateOrderItems(id: String!, input: UpdateOrderItemsType!): OrderItemsType!
+  deleteOrderItems(id: String!): Boolean!
+  softDeleteOrderItems(id: String!): Boolean!
+  createInvoice(input: CreateInvoiceType!): InvoiceType!
+  updateInvoice(id: String!, input: UpdateInvoiceType!): InvoiceType!
+  deleteInvoice(id: String!): Boolean!
+  softDeleteInvoice(id: String!): Boolean!
+  register(input: RegisterWithCompanyType!): AuthType!
+  login(input: LoginType!): AuthType!
+}
+
+input UpdateCompanyType {
+  id: ID!
+  name: String
+  location: String
+}
+
+input ClientUserType {
+  name: String!
+  username: String!
+  password: String!
+  role: UserRole!
+}
+
+input UpdateUserType {
+  id: ID!
+  name: String
+  username: String
+  password: String
+  role: UserRole
+  companyId: ID
+}
+
+input CreatePartnerType {
+  id: ID
+  name: String!
+  partnerType: BusinessPartnerType!
+  companyId: ID!
+}
+
+input UpdatePartnerType {
+  id: ID!
+  name: String
+  partnerType: BusinessPartnerType
+  companyId: ID
+}
+
+input CreateWarehouseType {
+  id: ID
+  name: String!
+  supportType: ProductSupportType!
+}
+
+input UpdateWarehouseType {
+  id: ID!
+  name: String
+  supportType: ProductSupportType
+}
+
+input CreateProductType {
+  id: ID
+  name: String!
+  type: ProductSupportType!
+  code: String!
+  price: String!
+  companyId: ID!
+}
+
+input UpdateProductType {
+  id: ID!
+  name: String
+  type: ProductSupportType
+  code: String
+  price: String
+  companyId: ID
+}
+
+input CreateOrderType {
+  id: ID
+  type: OrderCategory!
+  date: DateTime!
+  warehouseId: ID!
+  partnerId: ID!
+  items: [CreateOrderItemsType!]!
+}
+
+input CreateOrderItemsType {
+  id: ID
+  productId: ID!
+  quantity: Float!
+}
+
+input UpdateOrderType {
+  id: ID!
+  type: OrderCategory
+  date: DateTime
+  warehouseId: ID
+  partnerId: ID
+  items: [CreateOrderItemsType!]
+}
+
+input CreateOrderItemsWithOrderIdType {
+  id: ID
+  productId: ID!
+  quantity: Float!
+  orderId: ID!
+}
+
+input UpdateOrderItemsType {
+  id: ID!
+  productId: ID
+  quantity: Float
+}
+
+input CreateInvoiceType {
+  id: ID
+  date: DateTime!
+  orderId: ID!
+  invoiceNumber: String!
+}
+
+input UpdateInvoiceType {
+  id: ID!
+  date: DateTime
+  invoiceNumber: String
+  userId: String
+  orderId: String
+}
+
+input RegisterWithCompanyType {
+  companyName: String!
+  companyLocation: String!
+  name: String!
+  username: String!
+  password: String!
+}
+
+input LoginType {
+  username: String!
+  password: String!
+}
