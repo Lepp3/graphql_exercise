@@ -9,13 +9,15 @@ import {
   UpdateWarehouseSchema,
 } from './warehouse.schema';
 import { Order } from '../order/order.entity';
+import { validateUniqueField } from 'src/common/validators/uniqueName.validator';
+import { AuthUser } from 'src/decorators/currentUser.decorator';
 
 export type CreateWarehouseInput = z.infer<typeof CreateWarehouseSchema>;
 export type UpdateWarehouseInput = z.infer<typeof UpdateWarehouseSchema>;
 export interface HighestStockPerWarehouse {
   warehouseName: string;
-  name_of_product: string;
-  max_product: number;
+  nameOfProduct: string;
+  maxProduct: number;
 }
 
 @Injectable()
@@ -31,6 +33,32 @@ export class WarehouseService extends BaseService<Warehouse> {
     return this.repo.find({
       where: { companyId },
     } as FindManyOptions<Warehouse>);
+  }
+
+  async create(user: AuthUser, dto: CreateWarehouseInput) {
+    await validateUniqueField(this.repo, { name: dto.name }, 'Invoice Number');
+    const warehouse = this.repo.create(dto);
+    warehouse.companyId = user.companyId;
+    warehouse.modifiedBy = user.id;
+    return this.repo.save(warehouse);
+  }
+
+  async update(
+    user: AuthUser,
+    id: string,
+    dto: UpdateWarehouseInput,
+  ): Promise<Warehouse> {
+    const warehouse = await this.getById(id, user.companyId);
+    if (dto.name) {
+      await validateUniqueField(
+        this.repo,
+        { name: dto.name },
+        'Warehouse name',
+      );
+    }
+    Object.assign(warehouse, dto);
+    warehouse.modifiedBy = user.id;
+    return this.repo.save(warehouse);
   }
 
   async getHighestStockPerWarehouse(): Promise<HighestStockPerWarehouse[]> {

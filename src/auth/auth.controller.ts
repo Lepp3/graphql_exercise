@@ -1,56 +1,25 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Resolver, Mutation, Args } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
-import { LoginInput, LoginSchema } from './login.schema';
-import {
-  RegisterWithCompanyDto,
-  RegisterWithCompanyInput,
-  RegisterWithCompanySchema,
-} from './register.schema';
-import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
+import { RegisterWithCompanyInput } from './register.schema';
+import { LoginInput } from './login.schema';
 import { Public } from 'src/decorators/public.decorator';
-import { LoginDto } from './login.schema';
-import { ApiBody } from '@nestjs/swagger';
+import { AuthType } from './auth.types';
 
-@Controller('auth')
-export class AuthController {
+@Resolver()
+export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
-  @ApiBody({
-    type: RegisterWithCompanyDto,
-    examples: {
-      default: {
-        value: {
-          companyName: '',
-          companyLocation: '',
-          name: '',
-          username: '',
-          password: '',
-        },
-      },
-    },
-  })
-  @Post('register')
-  register(
-    @Body(new ZodValidationPipe(RegisterWithCompanySchema))
-    body: RegisterWithCompanyInput,
-  ) {
-    return this.authService.register(body);
+  @Mutation(() => AuthType)
+  async register(
+    @Args('input') input: RegisterWithCompanyInput,
+  ): Promise<AuthType> {
+    return await this.authService.register(input);
   }
+
   @Public()
-  @Post('login')
-  @ApiBody({
-    type: LoginDto,
-    examples: {
-      default: {
-        value: {
-          username: '',
-          password: '',
-        },
-      },
-    },
-  })
-  login(@Body(new ZodValidationPipe(LoginSchema)) body: LoginInput) {
-    return this.authService.login(body);
+  @Mutation(() => AuthType)
+  async login(@Args('input') input: LoginInput): Promise<AuthType> {
+    return await this.authService.login(input);
   }
 }

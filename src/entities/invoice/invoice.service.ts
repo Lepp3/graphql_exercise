@@ -32,6 +32,10 @@ export class InvoiceService extends BaseService<Invoice> {
     return this.repo.save(invoice);
   }
 
+  async findByUserId(userId: string): Promise<Invoice[]> {
+    return this.repo.find({ where: { userId } });
+  }
+
   async getByCompanyId(companyId: string): Promise<Invoice[]> {
     return this.repo.find({
       where: { companyId },

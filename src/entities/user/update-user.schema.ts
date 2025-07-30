@@ -14,7 +14,7 @@ const ClientUserSchema = CreateUserSchema.omit({ companyId: true });
 export class ClientUserDto extends createZodDto(ClientUserSchema) {}
 export type ClientUserInput = z.infer<typeof ClientUserSchema>;
 
-export const UpdateUserSchema = CreateUserSchema.partial();
+export const UpdateUserSchema = ClientUserSchema.partial();
 
 export type RegisterUserInput = z.infer<typeof CreateUserSchema>;
 export class CreateUserDto extends createZodDto(CreateUserSchema) {}

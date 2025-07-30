@@ -1,4 +1,4 @@
-import { ObjectType, Field, registerEnumType } from '@nestjs/graphql';
+import { Field, registerEnumType, ObjectType } from '@nestjs/graphql';
 import { BaseType } from 'src/common/baseType.types';
 import { PartnerType as PartnerTypeEnum } from './partner.entity';
 
@@ -17,4 +17,14 @@ export class PartnerType extends BaseType {
 
   @Field()
   companyId: string;
+}
+
+@ObjectType()
+export class MostLoyalCustomerType {
+  @Field()
+  companyId: string;
+  @Field()
+  customerName: string;
+  @Field()
+  totalOrders: string;
 }

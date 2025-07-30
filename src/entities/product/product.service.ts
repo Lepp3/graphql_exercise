@@ -6,6 +6,8 @@ import { BaseService } from 'src/common/base.service';
 import { z } from 'zod';
 import { CreateProductSchema, UpdateProductSchema } from './product.schema';
 import { OrderItems } from '../orderItems/orderItems.entity';
+import { validateUniqueField } from 'src/common/validators/uniqueName.validator';
+import { AuthUser } from 'src/decorators/currentUser.decorator';
 
 export type CreateProductInput = z.infer<typeof CreateProductSchema>;
 export type UpdateProductInput = z.infer<typeof UpdateProductSchema>;
@@ -49,5 +51,25 @@ export class ProductService extends BaseService<Product> {
       .getRawMany<TopSellingProduct>();
 
     return result.length > 0 ? result : 'No bestsellers yet';
+  }
+
+  async create(user: AuthUser, dto: CreateProductInput) {
+    await validateUniqueField(this.repo, { code: dto.code }, 'Product Code');
+    const newProduct = this.repo.create({
+      ...dto,
+      modifiedBy: user.id,
+    });
+    return this.repo.save(newProduct);
+  }
+
+  async update(user: AuthUser, id: string, dto: UpdateProductInput) {
+    const product = await this.getById(id);
+    if (dto.code) {
+      await validateUniqueField(this.repo, { code: dto.code }, 'Product code');
+    }
+    Object.assign(product, dto);
+    product.modifiedBy = user.id;
+
+    return this.repo.save(product);
   }
 }

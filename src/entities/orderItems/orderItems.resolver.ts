@@ -17,8 +17,9 @@ import { OrderService } from '../order/order.service';
 import { ProductService } from '../product/product.service';
 import { ProductType } from '../product/product.types';
 import { OrderType } from '../order/order.types';
+import { OrderItemsType } from './orderItems.type';
 
-@Resolver(() => OrderItems)
+@Resolver(() => OrderItemsType)
 export class OrderItemsController extends BaseResolver<OrderItems> {
   constructor(
     protected readonly orderItemsService: OrderItemsService,

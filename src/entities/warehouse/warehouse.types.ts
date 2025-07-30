@@ -13,3 +13,13 @@ export class WarehouseType extends BaseType {
   @Field()
   companyId: string;
 }
+
+@ObjectType()
+export class HighestStockPerWarehouseType {
+  @Field()
+  warehouseName: string;
+  @Field()
+  nameOfProduct: string;
+  @Field()
+  maxProduct: number;
+}

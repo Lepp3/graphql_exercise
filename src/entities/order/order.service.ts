@@ -35,6 +35,20 @@ export class OrderService extends BaseService<Order> {
     } as FindManyOptions<Order>);
   }
 
+  async findByPartnerId(partnerId: string): Promise<Order[]> {
+    return this.repo.find({
+      where: { partnerId },
+    });
+  }
+
+  async findByWarehouseId(warehouseId: string) {
+    return this.repo.find({ where: { warehouseId } });
+  }
+
+  async findByUserId(userId: string): Promise<Order[]> {
+    return this.repo.find({ where: { userId } });
+  }
+
   async createOrderWithItems(user: AuthUser, dto: CreateOrderInput) {
     const { items, ...orderData } = dto;
     const warehouse = await this.warehouseService.getById(

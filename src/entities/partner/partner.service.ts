@@ -6,6 +6,8 @@ import { BaseService } from 'src/common/base.service';
 import { z } from 'zod';
 import { Order } from '../order/order.entity';
 import { CreatePartnerSchema, UpdatePartnerSchema } from './partner.schema';
+import { AuthUser } from 'src/decorators/currentUser.decorator';
+import { validateUniqueField } from 'src/common/validators/uniqueName.validator';
 
 export type CreatePartnerInput = z.infer<typeof CreatePartnerSchema>;
 export type UpdatePartnerInput = z.infer<typeof UpdatePartnerSchema>;
@@ -48,5 +50,25 @@ export class PartnerService extends BaseService<Partner> {
       .getRawOne<MostLoyalCustomer>();
 
     return result ?? null;
+  }
+
+  async create(user: AuthUser, dto: CreatePartnerInput) {
+    await validateUniqueField(this.repo, { name: dto.name }, 'Partner Name');
+    const newPartner = this.repo.create({
+      ...dto,
+      modifiedBy: user.id,
+    });
+    return this.repo.save(newPartner);
+  }
+
+  async update(user: AuthUser, id: string, dto: UpdatePartnerInput) {
+    const partner = await this.getById(id);
+    if (dto.name) {
+      await validateUniqueField(this.repo, { name: dto.name }, 'Partner Name');
+    }
+    Object.assign(partner, dto);
+    partner.modifiedBy = user.id;
+
+    return this.repo.save(partner);
   }
 }

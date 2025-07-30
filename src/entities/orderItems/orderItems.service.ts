@@ -48,4 +48,9 @@ export class OrderItemsService extends BaseService<OrderItems> {
     record.modifiedBy = user.id;
     return this.repo.save(record);
   }
+  async getByProductId(productId: string): Promise<OrderItems[]> {
+    return this.repo.find({
+      where: { productId },
+    });
+  }
 }

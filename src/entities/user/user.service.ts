@@ -11,6 +11,8 @@ import {
   ClientUserDto,
 } from './update-user.schema';
 import * as bcrypt from 'bcrypt';
+import { AuthUser } from 'src/decorators/currentUser.decorator';
+import { validateUniqueField } from 'src/common/validators/uniqueName.validator';
 // import { validateUniqueField } from 'src/common/validators/uniqueName.validator';
 
 export type CreateUserInput = z.infer<typeof CreateUserSchema>;
@@ -21,17 +23,6 @@ export class UserService extends BaseService<User> {
   constructor(@InjectRepository(User) repo: Repository<User>) {
     super(repo);
   }
-
-  // protected override async beforeCreate(
-  //   data: DeepPartial<User>,
-  //   companyId: string,
-  // ) {
-  //   await validateUniqueField(
-  //     this.repo,
-  //     { username: data.username!, companyId },
-  //     'Username',
-  //   );
-  // }
 
   async getByCompanyId(companyId: string): Promise<User[]> {
     return this.repo.find({
@@ -68,7 +59,24 @@ export class UserService extends BaseService<User> {
       username: dto.username,
       password: hashedPassword,
       role: dto.role,
+      companyId,
     };
-    return super.create(modifiedDto, companyId, userId);
+    const user = this.repo.create(modifiedDto);
+    user.modifiedBy = userId;
+    return this.repo.save(user);
+  }
+
+  async update(user: AuthUser, id: string, dto: UpdateUserInput) {
+    const userToUpdate = await this.getById(id);
+    if (dto.username) {
+      await validateUniqueField(
+        this.repo,
+        { username: dto.username },
+        'User username',
+      );
+    }
+    Object.assign(userToUpdate, dto);
+    userToUpdate.modifiedBy = user.id;
+    return this.repo.save(userToUpdate);
   }
 }

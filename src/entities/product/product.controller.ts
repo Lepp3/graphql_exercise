@@ -1,71 +1,65 @@
-import { Controller, Post, Put, Body, Param, Get } from '@nestjs/common';
-import { BaseController } from 'src/common/base.resolver';
-import { ProductService } from './product.service';
-import { Product } from './product.entity';
 import {
-  CreateProductDto,
-  CreateProductSchema,
-  UpdateProductDto,
-  UpdateProductSchema,
-} from './product.schema';
-import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+  Resolver,
+  Mutation,
+  Args,
+  ResolveField,
+  Parent,
+  Query,
+} from '@nestjs/graphql';
+import { BaseResolver } from 'src/common/base.resolver';
+import {
+  CreateProductInput,
+  ProductService,
+  UpdateProductInput,
+} from './product.service';
+import { ProductType, TopSellingProductType } from './product.types';
 import { CurrentUser, AuthUser } from 'src/decorators/currentUser.decorator';
-import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
+import { CompanyService } from '../company/company.service';
+import { CompanyType } from '../company/company.types';
+import { OrderItemsService } from '../orderItems/orderItems.service';
+import { OrderItemsType } from '../orderItems/orderItems.type';
 
-@ApiBearerAuth('Authorization')
-@Controller('product')
-export class ProductController extends BaseController<
-  Product,
-  CreateProductDto,
-  UpdateProductDto
-> {
-  constructor(protected readonly productService: ProductService) {
+@Resolver(() => ProductType)
+export class ProductResolver extends BaseResolver<ProductType> {
+  constructor(
+    protected readonly productService: ProductService,
+    private readonly companyService: CompanyService,
+    private readonly orderItemsService: OrderItemsService,
+  ) {
     super(productService);
   }
-  @Get('best-seller')
-  getBestSellers(@CurrentUser() user: AuthUser) {
+
+  @Mutation(() => ProductType)
+  async createProduct(
+    @CurrentUser() user: AuthUser,
+    @Args('input') input: CreateProductInput,
+  ): Promise<ProductType> {
+    return await this.productService.create(user, input);
+  }
+
+  @Mutation(() => ProductType)
+  async updateProduct(
+    @CurrentUser() user: AuthUser,
+    @Args('id') id: string,
+    @Args('input') input: UpdateProductInput,
+  ): Promise<ProductType> {
+    return await this.productService.update(user, id, input);
+  }
+
+  @Query(() => [TopSellingProductType])
+  async bestSellers(
+    @CurrentUser() user: AuthUser,
+  ): Promise<TopSellingProductType[] | string> {
     return this.productService.getTopSellingProducts(user.companyId);
   }
 
-  @Post()
-  @ApiBody({
-    type: CreateProductDto,
-    examples: {
-      default: {
-        value: {
-          type: '',
-          code: '',
-          price: '',
-        },
-      },
-    },
-  })
-  override create(
-    @CurrentUser() user: AuthUser,
-    @Body(new ZodValidationPipe(CreateProductSchema)) dto: CreateProductDto,
-  ) {
-    return super.create(user, dto);
+  @ResolveField(() => CompanyType)
+  async company(@Parent() product: ProductType): Promise<CompanyType> {
+    return this.companyService.getById(product.companyId);
   }
 
-  @Put(':id')
-  @ApiBody({
-    type: UpdateProductDto,
-    examples: {
-      default: {
-        value: {
-          type: '',
-          code: '',
-          price: '',
-          companyId: '',
-        },
-      },
-    },
-  })
-  override update(
-    @CurrentUser() user: AuthUser,
-    @Param('id') id: string,
-    @Body(new ZodValidationPipe(UpdateProductSchema)) dto: UpdateProductDto,
-  ) {
-    return super.update(user, id, dto);
+  @ResolveField(() => [OrderItemsType])
+  async orderItems(@Parent() product: ProductType): Promise<OrderItemsType[]> {
+    return this.orderItemsService.getByProductId(product.id);
   }
 }

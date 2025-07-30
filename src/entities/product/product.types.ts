@@ -24,3 +24,11 @@ export class ProductType extends BaseType {
   @Field()
   code: string;
 }
+
+ObjectType();
+export class TopSellingProductType {
+  @Field()
+  productName: string;
+  @Field()
+  totalSold: number;
+}
