@@ -5,6 +5,7 @@ export const CreateInvoiceSchema = z.object({
   date: z.date(),
   orderId: z.uuid(),
   invoiceNumber: z.string().min(4),
+  userId: z.uuid(),
 });
 
 export const UpdateInvoiceSchema = CreateInvoiceSchema.partial();

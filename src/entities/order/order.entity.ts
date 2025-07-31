@@ -11,7 +11,11 @@ export class Order extends BaseEntity {
   @Column({ type: 'enum', enum: OrderType })
   type: OrderType;
 
-  @Column({ type: 'date', default: () => 'CURRENT_DATE' })
+  @Column({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    nullable: true,
+  })
   date: Date;
 
   @Column({ name: 'company_id', type: 'uuid' })

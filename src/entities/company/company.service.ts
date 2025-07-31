@@ -18,6 +18,7 @@ export class CompanyService extends BaseService<Company> {
   }
 
   async create(dto: CreateCompanyInput): Promise<Company> {
+    await validateUniqueField(this.repo, { name: dto.name }, 'Company name');
     const company = this.repo.create(dto);
     return this.repo.save(company);
   }
@@ -34,7 +35,7 @@ export class CompanyService extends BaseService<Company> {
       );
     }
     if (dto.name && dto.name !== company.name) {
-      await validateUniqueField(this.repo, { name: dto.name }, 'Name');
+      await validateUniqueField(this.repo, { name: dto.name }, 'Company name');
     }
 
     Object.assign(company, dto);

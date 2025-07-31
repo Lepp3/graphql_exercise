@@ -7,53 +7,9 @@ import {
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from 'src/decorators/roles.decorator';
 import { UserRole } from 'src/entities/user/user.entity';
-import { Request } from 'express';
 import { GqlExecutionContext } from '@nestjs/graphql';
+import { RequestWithUser } from 'src/decorators/currentUser.decorator';
 
-// @Injectable()
-// export class RolesGuard implements CanActivate {
-//   constructor(private reflector: Reflector) {}
-
-//   canActivate(context: ExecutionContext): boolean {
-//     const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
-//       ROLES_KEY,
-//       [context.getHandler(), context.getClass()],
-//     );
-//     if (!requiredRoles) return true;
-
-//     const req = context.switchToHttp().getRequest<Request>();
-//     const user = req.user as { role: UserRole };
-
-//     if (!user || !requiredRoles.includes(user.role)) {
-//       throw new ForbiddenException('Insufficient role');
-//     }
-
-//     return true;
-//   }
-// }
-
-// @Injectable()
-// export class RolesGuard implements CanActivate {
-//   constructor(private readonly reflector: Reflector) {}
-
-//   canActivate(context: ExecutionContext): boolean {
-//     const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
-//       ROLES_KEY,
-//       [context.getHandler(), context.getClass()],
-//     );
-//     if (!requiredRoles) return true;
-
-//     const ctx = GqlExecutionContext.create(context);
-//     const { req } = ctx.getContext<{ req: Request }>();
-//     const user = req.user as { role: UserRole };
-
-//     if (!user || !requiredRoles.includes(user.role)) {
-//       throw new ForbiddenException('Insufficient role');
-//     }
-
-//     return true;
-//   }
-// }
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
@@ -63,12 +19,18 @@ export class RolesGuard implements CanActivate {
       ROLES_KEY,
       [context.getHandler(), context.getClass()],
     );
+
     if (!requiredRoles) return true;
 
     const ctx = GqlExecutionContext.create(context);
-    const user = ctx.getContext<{ user: { role: UserRole } }>().user;
+    const user = ctx.getContext<{ req: RequestWithUser }>().req.user;
 
-    if (!user || !requiredRoles.includes(user.role)) {
+    console.log('[RolesGuard]', {
+      requiredRoles,
+      actualUserRole: user?.role,
+    });
+
+    if (!user || !requiredRoles.includes(user.role as UserRole)) {
       throw new ForbiddenException('Insufficient role');
     }
 

@@ -4,6 +4,7 @@ import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from 'src/decorators/public.decorator';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Request } from 'express';
+import { RequestWithUser } from 'src/decorators/currentUser.decorator';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -21,7 +22,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   getRequest(context: ExecutionContext): Request {
     const ctx = GqlExecutionContext.create(context);
-    const gqlContext = ctx.getContext<{ req: Request }>();
-    return gqlContext.req;
+    const gqlContext = ctx.getContext<{ req: RequestWithUser }>().req;
+    return gqlContext;
   }
 }

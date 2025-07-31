@@ -5,7 +5,7 @@ import { CreateOrderItemsSchema } from '../orderItems/orderItems.schema';
 export const CreateOrderSchema = z.object({
   id: z.uuid().optional(),
   type: z.enum(OrderType),
-  date: z.date(),
+  date: z.date().optional(),
   warehouseId: z.uuid(),
   partnerId: z.uuid(),
   items: z.array(CreateOrderItemsSchema),

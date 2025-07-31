@@ -18,7 +18,6 @@ import { InvoiceModule } from './entities/invoice/invoice.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import './graphql/enums';
-import { AuthUser } from './decorators/currentUser.decorator';
 
 @Module({
   imports: [
@@ -28,9 +27,6 @@ import { AuthUser } from './decorators/currentUser.decorator';
         ConfigModule,
         GraphQLModule.forRoot<ApolloDriverConfig>({
           driver: ApolloDriver,
-          context: ({ req }: { req: Request & { user: AuthUser } }) => ({
-            user: req.user,
-          }),
           autoSchemaFile: 'src/schema.gql',
           playground: true,
         }),

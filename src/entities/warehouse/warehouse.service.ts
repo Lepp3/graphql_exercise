@@ -70,16 +70,16 @@ export class WarehouseService extends BaseService<Warehouse> {
         `
       SUM(
         CASE
-          WHEN o.type = 'shipment' THEN oi.quantity
-          WHEN o.type = 'delivery' THEN -oi.quantity
+          WHEN o.type = 'delivery' THEN oi.quantity
+          WHEN o.type = 'shipment' THEN -oi.quantity
           ELSE 0
         END
       )`,
         'stockLevel',
       )
-      .innerJoin('o.orderItems', 'oi')
-      .innerJoin('oi.product', 'p')
-      .innerJoin('o.warehouse', 'w')
+      .innerJoin('order_items', 'oi', 'oi.order_id = o.id')
+      .innerJoin('product', 'p', 'p.id = oi.product_id')
+      .innerJoin('warehouse', 'w', 'w.id = o.warehouse_id')
       .where('o.deletedAt IS NULL')
       .andWhere('oi.deletedAt IS NULL')
       .andWhere('p.deletedAt IS NULL')
@@ -89,11 +89,11 @@ export class WarehouseService extends BaseService<Warehouse> {
     const result = await this.orderRepo
       .createQueryBuilder()
       .select('s."warehouseName"', 'warehouseName')
-      .addSelect('MIN(s."productName")', 'name_of_product')
-      .addSelect('MAX(s."stockLevel")', 'max_product')
+      .addSelect('s."productName"', 'nameOfProduct')
+      .addSelect('MAX(s."stockLevel")', 'maxProduct')
       .from(`(${subQuery.getQuery()})`, 's')
       .setParameters(subQuery.getParameters())
-      .groupBy('s."warehouseName"')
+      .groupBy('s."warehouseName", s."productName"')
       .orderBy('MAX(s."stockLevel")', 'DESC')
       .getRawMany<HighestStockPerWarehouse>();
 

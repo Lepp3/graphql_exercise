@@ -9,7 +9,7 @@ export interface AuthUser {
   role: string;
 }
 
-interface RequestWithUser extends Request {
+export interface RequestWithUser extends Request {
   user: AuthUser;
 }
 

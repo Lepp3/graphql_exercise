@@ -8,7 +8,7 @@ export class OrderType extends BaseType {
   @Field(() => OrderTypeEnum)
   type: OrderTypeEnum;
 
-  @Field(() => Date)
+  @Field(() => Date, { nullable: true })
   date: Date;
 
   @Field()
@@ -32,8 +32,8 @@ export class CreateOrderType {
   @Field(() => OrderTypeEnum)
   type: OrderTypeEnum;
 
-  @Field(() => Date)
-  date: Date;
+  @Field(() => Date, { nullable: true })
+  date?: Date;
 
   @Field(() => ID)
   warehouseId: string;

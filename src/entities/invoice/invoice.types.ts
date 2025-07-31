@@ -29,6 +29,9 @@ export class CreateInvoiceType {
 
   @Field()
   invoiceNumber: string;
+
+  @Field(() => ID)
+  userId: string;
 }
 
 @InputType()

@@ -1,4 +1,9 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindManyOptions } from 'typeorm';
 import { Order, OrderType } from './order.entity';
@@ -11,6 +16,7 @@ import { WarehouseService } from '../warehouse/warehouse.service';
 import { PartnerService } from '../partner/partner.service';
 import { PartnerType } from '../partner/partner.entity';
 import { ProductService } from '../product/product.service';
+import { InvoiceService } from '../invoice/invoice.service';
 
 export type CreateOrderInput = z.infer<typeof CreateOrderSchema>;
 export type UpdateOrderInput = z.infer<typeof UpdateOrderSchema>;
@@ -24,6 +30,8 @@ export class OrderService extends BaseService<Order> {
     private readonly warehouseService: WarehouseService,
     private readonly partnerService: PartnerService,
     private readonly productService: ProductService,
+    @Inject(forwardRef(() => InvoiceService))
+    private readonly invoiceService: InvoiceService,
   ) {
     super(repo);
     this.orderItemsRepo = orderItemsRepo;
@@ -47,6 +55,21 @@ export class OrderService extends BaseService<Order> {
 
   async findByUserId(userId: string): Promise<Order[]> {
     return this.repo.find({ where: { userId } });
+  }
+
+  async generateInvoiceNumber(): Promise<string> {
+    const year = new Date().getFullYear();
+    let increment = 1;
+    let invoiceNumber: string;
+    let exists: boolean;
+
+    do {
+      invoiceNumber = `INV-${year}-${increment.toString().padStart(4, '0')}`;
+      exists = !!(await this.invoiceService.findByInvoiceNumber(invoiceNumber));
+      increment++;
+    } while (exists);
+
+    return invoiceNumber;
   }
 
   async createOrderWithItems(user: AuthUser, dto: CreateOrderInput) {
@@ -86,6 +109,10 @@ export class OrderService extends BaseService<Order> {
 
     const order = this.repo.create(orderData);
     order.companyId = user.companyId;
+    order.userId = user.id;
+
+    // order.date = new Date(order.date);
+
     await this.repo.save(order);
 
     const orderItems = items.map((item) => ({
@@ -96,7 +123,15 @@ export class OrderService extends BaseService<Order> {
 
     await this.orderItemsRepo.save(orderItems);
 
-    return { order, items: orderItems };
+    const invoiceNumber = await this.generateInvoiceNumber();
+    await this.invoiceService.create(user, {
+      date: order.date,
+      orderId: order.id,
+      invoiceNumber,
+      userId: user.id,
+    });
+
+    return order;
   }
 
   async updateOrderWithItems(

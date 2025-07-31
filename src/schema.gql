@@ -64,7 +64,7 @@ type OrderType {
   deletedAt: DateTime
   modifiedBy: String
   type: OrderCategory!
-  date: DateTime!
+  date: DateTime
   companyId: String!
   userId: String!
   partnerId: String!
@@ -297,7 +297,7 @@ input UpdateProductType {
 input CreateOrderType {
   id: ID
   type: OrderCategory!
-  date: DateTime!
+  date: DateTime
   warehouseId: ID!
   partnerId: ID!
   items: [CreateOrderItemsType!]!
@@ -336,6 +336,7 @@ input CreateInvoiceType {
   date: DateTime!
   orderId: ID!
   invoiceNumber: String!
+  userId: ID!
 }
 
 input UpdateInvoiceType {

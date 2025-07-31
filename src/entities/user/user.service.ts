@@ -51,6 +51,11 @@ export class UserService extends BaseService<User> {
     companyId: string,
     userId: string,
   ) {
+    await validateUniqueField(
+      this.repo,
+      { username: dto.username },
+      'Username',
+    );
     const hashedPassword = await bcrypt.hash(dto.password, 10);
     const modifiedDto = {
       name: dto.name,

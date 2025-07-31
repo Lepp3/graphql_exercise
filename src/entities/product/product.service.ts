@@ -35,13 +35,14 @@ export class ProductService extends BaseService<Product> {
   async getTopSellingProducts(
     companyId: string,
   ): Promise<TopSellingProduct[] | string> {
+    console.log('BEST SELLERS');
     const result = await this.orderItemsRepo
       .createQueryBuilder('oi')
       .select('p.name', 'productName')
       .addSelect('SUM(oi.quantity)', 'totalSold')
-      .innerJoin('oi.order', 'o')
-      .innerJoin('oi.product', 'p')
-      .where('o.type = :type', { type: 'delivery' })
+      .innerJoin('order', 'o', 'o.id = oi.order_id')
+      .innerJoin('product', 'p', 'p.id = oi.product_id')
+      .where('o.type = :type', { type: 'shipment' })
       .andWhere('o.companyId = :companyId', { companyId })
       .andWhere('oi.deletedAt IS NULL')
       .andWhere('o.deletedAt IS NULL')

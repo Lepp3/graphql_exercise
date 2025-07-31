@@ -25,16 +25,10 @@ export abstract class BaseService<T extends BaseEntity> {
     if (!item)
       throw new NotFoundException(`${this.repo.metadata.tableName} not found`);
 
-    if ('companyId' in item && item.companyId !== companyId) {
-      throw new NotFoundException(
-        `${this.repo.metadata.tableName} not found in your company scope`,
-      );
-    }
     return item;
   }
 
   async softDelete(id: string, companyId?: string) {
-    console.log('log from soft delete service', companyId);
     await this.getById(id, companyId);
     return this.repo.softDelete(id);
   }

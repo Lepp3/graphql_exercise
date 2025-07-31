@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, Repository } from 'typeorm';
+import { FindManyOptions, FindOptionsWhere, Repository } from 'typeorm';
 import { Invoice } from './invoice.entity';
 import { BaseService } from 'src/common/base.service';
 import { z } from 'zod';
@@ -16,6 +16,7 @@ export type UpdateInvoiceInput = z.infer<typeof UpdateInvoiceSchema>;
 export class InvoiceService extends BaseService<Invoice> {
   constructor(
     @InjectRepository(Invoice) repo: Repository<Invoice>,
+    @Inject(forwardRef(() => OrderService))
     private readonly orderService: OrderService,
   ) {
     super(repo);
@@ -44,6 +45,15 @@ export class InvoiceService extends BaseService<Invoice> {
 
   async findAllByOrderId(orderId: string): Promise<Invoice[]> {
     return this.repo.find({ where: { orderId } } as FindManyOptions<Invoice>);
+  }
+
+  async findByInvoiceNumber(invoiceNumber: string): Promise<Invoice | null> {
+    const item = await this.repo.findOne({
+      where: { invoiceNumber } as FindOptionsWhere<Invoice>,
+    });
+    if (!item) return null;
+
+    return item;
   }
 
   async update(
