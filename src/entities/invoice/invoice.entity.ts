@@ -1,9 +1,14 @@
 import { Entity, Column } from 'typeorm';
 import { BaseEntity } from 'src/common/base.entity';
+import { dateTransformer } from 'src/common/formtterFunctions';
 
 @Entity()
 export class Invoice extends BaseEntity {
-  @Column({ type: 'date', default: () => 'CURRENT_DATE' })
+  @Column({
+    type: 'date',
+    default: () => 'CURRENT_DATE',
+    transformer: dateTransformer,
+  })
   date: Date;
 
   @Column({ name: 'invoice_number' })

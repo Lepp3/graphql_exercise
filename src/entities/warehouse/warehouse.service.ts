@@ -90,11 +90,12 @@ export class WarehouseService extends BaseService<Warehouse> {
       .createQueryBuilder()
       .select('s."warehouseName"', 'warehouseName')
       .addSelect('s."productName"', 'nameOfProduct')
-      .addSelect('MAX(s."stockLevel")', 'maxProduct')
+      .addSelect('s."stockLevel"', 'maxProduct')
       .from(`(${subQuery.getQuery()})`, 's')
       .setParameters(subQuery.getParameters())
-      .groupBy('s."warehouseName", s."productName"')
-      .orderBy('MAX(s."stockLevel")', 'DESC')
+      .distinctOn(['s."warehouseName"'])
+      .orderBy('s."warehouseName"', 'ASC')
+      .addOrderBy('s."stockLevel"', 'DESC')
       .getRawMany<HighestStockPerWarehouse>();
 
     return result;

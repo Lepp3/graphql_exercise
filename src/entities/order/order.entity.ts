@@ -1,5 +1,6 @@
 import { Entity, Column } from 'typeorm';
 import { BaseEntity } from 'src/common/base.entity';
+import { dateTransformer } from 'src/common/formtterFunctions';
 
 export enum OrderType {
   SHIPMENT = 'shipment',
@@ -12,9 +13,10 @@ export class Order extends BaseEntity {
   type: OrderType;
 
   @Column({
-    type: 'timestamp',
+    type: 'date',
     default: () => 'CURRENT_TIMESTAMP',
     nullable: true,
+    transformer: dateTransformer,
   })
   date: Date;
 
