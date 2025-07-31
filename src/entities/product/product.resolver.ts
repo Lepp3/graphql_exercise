@@ -21,6 +21,8 @@ import { OrderItemsService } from '../orderItems/orderItems.service';
 import { OrderItemsType } from '../orderItems/orderItems.type';
 import { Roles } from 'src/decorators/roles.decorator';
 import { UserRole } from '../user/user.entity';
+import { CreateProductSchema, UpdateProductSchema } from './product.schema';
+import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
 
 @Resolver(() => ProductType)
 export class ProductResolver extends BaseResolver<ProductType> {
@@ -45,7 +47,8 @@ export class ProductResolver extends BaseResolver<ProductType> {
   @Mutation(() => ProductType, { name: 'createProduct' })
   async createProduct(
     @CurrentUser() user: AuthUser,
-    @Args('input') input: CreateProductType,
+    @Args('input', new ZodValidationPipe(CreateProductSchema))
+    input: CreateProductType,
   ): Promise<ProductType> {
     return await this.productService.create(user, input);
   }
@@ -54,7 +57,8 @@ export class ProductResolver extends BaseResolver<ProductType> {
   async updateProduct(
     @CurrentUser() user: AuthUser,
     @Args('id') id: string,
-    @Args('input') input: UpdateProductType,
+    @Args('input', new ZodValidationPipe(UpdateProductSchema))
+    input: UpdateProductType,
   ): Promise<ProductType> {
     return await this.productService.update(user, id, input);
   }

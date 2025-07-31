@@ -9,7 +9,7 @@ export const CreateUserSchema = z.object({
   companyId: z.uuid(),
 });
 
-const ClientUserSchema = CreateUserSchema.omit({ companyId: true });
+export const ClientUserSchema = CreateUserSchema.omit({ companyId: true });
 
 export type ClientUserInput = z.infer<typeof ClientUserSchema>;
 

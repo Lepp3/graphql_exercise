@@ -20,6 +20,8 @@ import { OrderType } from '../order/order.types';
 import { UserType } from '../user/user.types';
 import { Roles } from 'src/decorators/roles.decorator';
 import { UserRole } from '../user/user.entity';
+import { ZodValidationPipe } from 'nestjs-zod';
+import { CreateInvoiceSchema, UpdateInvoiceSchema } from './invoice.schema';
 
 @Resolver(() => InvoiceType)
 export class InvoiceResolver extends BaseResolver<InvoiceType> {
@@ -45,7 +47,8 @@ export class InvoiceResolver extends BaseResolver<InvoiceType> {
   @Roles(UserRole.OWNER, UserRole.OPERATOR)
   async createInvoice(
     @CurrentUser() user: AuthUser,
-    @Args('input') input: CreateInvoiceType,
+    @Args('input', new ZodValidationPipe(CreateInvoiceSchema))
+    input: CreateInvoiceType,
   ): Promise<InvoiceType> {
     return this.invoiceService.create(user, input);
   }
@@ -55,7 +58,8 @@ export class InvoiceResolver extends BaseResolver<InvoiceType> {
   async updateInvoice(
     @CurrentUser() user: AuthUser,
     @Args('id') id: string,
-    @Args('input') input: UpdateInvoiceType,
+    @Args('input', new ZodValidationPipe(UpdateInvoiceSchema))
+    input: UpdateInvoiceType,
   ): Promise<InvoiceType> {
     return this.invoiceService.update(user, id, input);
   }

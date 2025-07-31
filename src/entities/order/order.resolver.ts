@@ -25,6 +25,8 @@ import { CompanyService } from '../company/company.service';
 import { OrderItemsService } from '../orderItems/orderItems.service';
 import { Roles } from 'src/decorators/roles.decorator';
 import { UserRole } from '../user/user.entity';
+import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
+import { CreateOrderSchema, UpdateOrderSchema } from './order.schema';
 
 @Resolver(() => OrderType)
 export class OrderResolver extends BaseResolver<Order> {
@@ -52,7 +54,11 @@ export class OrderResolver extends BaseResolver<Order> {
 
   @Mutation(() => OrderType, { name: 'createOrder' })
   @Roles(UserRole.OWNER, UserRole.OPERATOR)
-  create(@CurrentUser() user: AuthUser, @Args('input') input: CreateOrderType) {
+  create(
+    @CurrentUser() user: AuthUser,
+    @Args('input', new ZodValidationPipe(CreateOrderSchema))
+    input: CreateOrderType,
+  ) {
     return this.orderService.createOrderWithItems(user, input);
   }
 
@@ -61,7 +67,8 @@ export class OrderResolver extends BaseResolver<Order> {
   async updateOrder(
     @CurrentUser() user: AuthUser,
     @Args('id') id: string,
-    @Args('input') input: UpdateOrderType,
+    @Args('input', new ZodValidationPipe(UpdateOrderSchema))
+    input: UpdateOrderType,
   ): Promise<OrderType> {
     return await this.orderService.updateOrderWithItems(user, input, id);
   }

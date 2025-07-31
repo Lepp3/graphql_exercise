@@ -21,6 +21,11 @@ import { OrderService } from '../order/order.service';
 import { OrderType } from '../order/order.types';
 import { Roles } from 'src/decorators/roles.decorator';
 import { UserRole } from '../user/user.entity';
+import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
+import {
+  CreateWarehouseSchema,
+  UpdateWarehouseSchema,
+} from './warehouse.schema';
 
 @Resolver(() => WarehouseType)
 export class WarehouseResolver extends BaseResolver<WarehouseType> {
@@ -50,7 +55,8 @@ export class WarehouseResolver extends BaseResolver<WarehouseType> {
   @Mutation(() => WarehouseType, { name: 'createWarehouse' })
   async createWarehouse(
     @CurrentUser() user: AuthUser,
-    @Args('input') input: CreateWarehouseType,
+    @Args('input', new ZodValidationPipe(CreateWarehouseSchema))
+    input: CreateWarehouseType,
   ): Promise<WarehouseType> {
     return await this.warehouseService.create(user, input);
   }
@@ -59,7 +65,8 @@ export class WarehouseResolver extends BaseResolver<WarehouseType> {
   async updateWarehouse(
     @CurrentUser() user: AuthUser,
     @Args('id') id: string,
-    @Args('input') input: UpdateWarehouseType,
+    @Args('input', new ZodValidationPipe(UpdateWarehouseSchema))
+    input: UpdateWarehouseType,
   ): Promise<WarehouseType> {
     return this.warehouseService.update(user, id, input);
   }

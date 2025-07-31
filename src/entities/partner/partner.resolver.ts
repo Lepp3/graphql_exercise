@@ -21,6 +21,8 @@ import {
 } from './partner.types';
 import { Roles } from 'src/decorators/roles.decorator';
 import { UserRole } from '../user/user.entity';
+import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
+import { CreatePartnerSchema, UpdatePartnerSchema } from './partner.schema';
 
 @Resolver(() => PartnerType)
 export class PartnerResolver extends BaseResolver<PartnerType> {
@@ -46,7 +48,8 @@ export class PartnerResolver extends BaseResolver<PartnerType> {
   @Roles(UserRole.OWNER, UserRole.OPERATOR)
   async createPartner(
     @CurrentUser() user: AuthUser,
-    @Args('input') input: CreatePartnerType,
+    @Args('input', new ZodValidationPipe(CreatePartnerSchema))
+    input: CreatePartnerType,
   ): Promise<PartnerType> {
     return await this.partnerService.create(user, input);
   }
@@ -56,7 +59,8 @@ export class PartnerResolver extends BaseResolver<PartnerType> {
   async updatePartner(
     @CurrentUser() user: AuthUser,
     @Args('id') id: string,
-    @Args('input') input: UpdatePartnerType,
+    @Args('input', new ZodValidationPipe(UpdatePartnerSchema))
+    input: UpdatePartnerType,
   ): Promise<PartnerType> {
     return await this.partnerService.update(user, id, input);
   }

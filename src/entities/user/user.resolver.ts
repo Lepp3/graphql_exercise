@@ -18,6 +18,8 @@ import { OrderType } from '../order/order.types';
 import { InvoiceType } from '../invoice/invoice.types';
 import { Roles } from 'src/decorators/roles.decorator';
 import { UserRole } from './user.entity';
+import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
+import { ClientUserSchema, UpdateUserSchema } from './user.schema';
 
 @Resolver(() => UserType)
 export class UserResolver extends BaseResolver<UserType> {
@@ -45,7 +47,8 @@ export class UserResolver extends BaseResolver<UserType> {
   @Roles(UserRole.OWNER, UserRole.OPERATOR)
   async createUser(
     @CurrentUser() user: AuthUser,
-    @Args('input') input: ClientUserType,
+    @Args('input', new ZodValidationPipe(ClientUserSchema))
+    input: ClientUserType,
   ): Promise<UserType> {
     return this.userService.addUserToCompany(input, user.companyId, user.id);
   }
@@ -55,7 +58,8 @@ export class UserResolver extends BaseResolver<UserType> {
   async updateUser(
     @CurrentUser() user: AuthUser,
     @Args('id') id: string,
-    @Args('input') input: UpdateUserType,
+    @Args('input', new ZodValidationPipe(UpdateUserSchema))
+    input: UpdateUserType,
   ): Promise<UserType> {
     return await this.userService.update(user, id, input);
   }

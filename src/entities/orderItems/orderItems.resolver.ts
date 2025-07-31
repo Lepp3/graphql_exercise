@@ -21,6 +21,11 @@ import {
 } from './orderItems.type';
 import { Roles } from 'src/decorators/roles.decorator';
 import { UserRole } from '../user/user.entity';
+import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
+import {
+  CreateOrderItemsSchema,
+  UpdateOrderItemsSchema,
+} from './orderItems.schema';
 
 @Resolver(() => OrderItemsType)
 export class OrderItemsResolver extends BaseResolver<OrderItems> {
@@ -46,7 +51,8 @@ export class OrderItemsResolver extends BaseResolver<OrderItems> {
   @Roles(UserRole.OWNER, UserRole.OPERATOR)
   create(
     @CurrentUser() user: AuthUser,
-    @Args('input') dto: CreateOrderItemsWithOrderIdType,
+    @Args('input', new ZodValidationPipe(CreateOrderItemsSchema))
+    dto: CreateOrderItemsWithOrderIdType,
   ): Promise<OrderItemsType> {
     return this.orderItemsService.create(user, dto);
   }
@@ -56,7 +62,8 @@ export class OrderItemsResolver extends BaseResolver<OrderItems> {
   update(
     @CurrentUser() user: AuthUser,
     @Args('id') id: string,
-    @Args('input') dto: UpdateOrderItemsType,
+    @Args('input', new ZodValidationPipe(UpdateOrderItemsSchema))
+    dto: UpdateOrderItemsType,
   ): Promise<OrderItemsType> {
     return this.orderItemsService.update(user, id, dto);
   }

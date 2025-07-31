@@ -22,6 +22,8 @@ import { WarehouseType } from '../warehouse/warehouse.types';
 import { ProductType } from '../product/product.types';
 import { Roles } from 'src/decorators/roles.decorator';
 import { UserRole } from '../user/user.entity';
+import { UpdateCompanySchema } from './company.schema';
+import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
 
 @Resolver(() => CompanyType)
 export class CompanyResolver extends BaseResolver<CompanyType> {
@@ -36,11 +38,6 @@ export class CompanyResolver extends BaseResolver<CompanyType> {
     super(companyService);
   }
 
-  // @Query(() => [CompanyType], { name: 'getAllCompanies' })
-  // override getAll(@CurrentUser() user: AuthUser) {
-  //   return super.getAll(user);
-  // }
-
   @Query(() => CompanyType, { name: 'getCompanyById' })
   override getById(@CurrentUser() user: AuthUser, @Args('id') id: string) {
     return super.getById(user, id);
@@ -51,7 +48,8 @@ export class CompanyResolver extends BaseResolver<CompanyType> {
   async updateCompany(
     @CurrentUser() user: AuthUser,
     @Args('id') id: string,
-    @Args('input') input: UpdateCompanyType,
+    @Args('input', new ZodValidationPipe(UpdateCompanySchema))
+    input: UpdateCompanyType,
   ): Promise<CompanyType> {
     return await this.companyService.update(user, id, input);
   }
