@@ -81,8 +81,12 @@ export class PartnerResolver extends BaseResolver<PartnerType> {
     name: 'mostLoyalCustomer',
     nullable: true,
   })
-  async mostLoyalPartner(): Promise<MostLoyalCustomerType | null> {
-    const result = await this.partnerService.getMostLoyalCustomer();
+  async mostLoyalPartner(
+    @CurrentUser() user: AuthUser,
+  ): Promise<MostLoyalCustomerType | null> {
+    const result = await this.partnerService.getMostLoyalCustomer(
+      user.companyId,
+    );
     return result ?? null;
   }
 

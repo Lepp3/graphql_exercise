@@ -17,8 +17,8 @@ export class OrderType extends BaseType {
   @Field()
   userId: string;
 
-  @Field()
-  partnerId: string;
+  @Field(() => ID, { nullable: true })
+  partnerId?: string | null;
 
   @Field()
   warehouseId: string;
@@ -38,8 +38,8 @@ export class CreateOrderType {
   @Field(() => ID)
   warehouseId: string;
 
-  @Field(() => ID)
-  partnerId: string;
+  @Field(() => ID, { nullable: true })
+  partnerId?: string | null;
 
   @Field(() => [CreateOrderItemsType])
   items: CreateOrderItemsType[];
@@ -60,8 +60,20 @@ export class UpdateOrderType {
   warehouseId?: string;
 
   @Field(() => ID, { nullable: true })
-  partnerId?: string;
+  partnerId?: string | null;
 
   @Field(() => [CreateOrderItemsType], { nullable: true })
   items?: CreateOrderItemsType[];
+}
+
+@InputType()
+export class TransferListType {
+  @Field(() => ID)
+  warehouseFrom: string;
+
+  @Field(() => ID)
+  warehouseTo: string;
+
+  @Field(() => [CreateOrderItemsType])
+  items: CreateOrderItemsType[];
 }

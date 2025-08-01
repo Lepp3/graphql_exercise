@@ -29,6 +29,6 @@ export class Order extends BaseEntity {
   @Column({ name: 'warehouse_id', type: 'uuid' })
   warehouseId: string;
 
-  @Column({ name: 'partner_id', type: 'uuid' })
-  partnerId: string;
+  @Column({ name: 'partner_id', type: 'uuid', nullable: true })
+  partnerId: string | null;
 }

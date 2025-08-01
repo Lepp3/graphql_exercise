@@ -38,8 +38,10 @@ export class WarehouseResolver extends BaseResolver<WarehouseType> {
   }
 
   @Query(() => [HighestStockPerWarehouseType], { name: 'highestStock' })
-  async highestStock(): Promise<HighestStockPerWarehouseType[]> {
-    return this.warehouseService.getHighestStockPerWarehouse();
+  async highestStock(
+    @CurrentUser() user: AuthUser,
+  ): Promise<HighestStockPerWarehouseType[]> {
+    return this.warehouseService.getHighestStockPerWarehouse(user.companyId);
   }
 
   @Query(() => [WarehouseType], { name: 'getAllWarehouses' })

@@ -67,14 +67,14 @@ type OrderType {
   date: DateTime
   companyId: String!
   userId: String!
-  partnerId: String!
+  partnerId: ID
   warehouseId: String!
   invoices: [InvoiceType!]!
   orderItems: [OrderItemsType!]!
   user: UserType!
   company: CompanyType!
   warehouse: WarehouseType!
-  partner: PartnerType!
+  partner: PartnerType
 }
 
 """the type of order"""
@@ -298,7 +298,7 @@ input CreateOrderType {
   type: OrderCategory!
   date: DateTime
   warehouseId: ID!
-  partnerId: ID!
+  partnerId: ID
   items: [CreateOrderItemsType!]!
 }
 

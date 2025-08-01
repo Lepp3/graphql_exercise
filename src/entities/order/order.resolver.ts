@@ -110,8 +110,12 @@ export class OrderResolver extends BaseResolver<Order> {
     return this.warehouseService.getById(order.warehouseId);
   }
 
-  @ResolveField(() => PartnerType)
+  @ResolveField(() => PartnerType, { nullable: true })
   async partner(@Parent() order: OrderType) {
-    return this.partnerService.getById(order.partnerId);
+    const pid = order.partnerId;
+    if (!pid) {
+      return null;
+    }
+    return this.partnerService.getById(pid);
   }
 }

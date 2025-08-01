@@ -32,9 +32,7 @@ export class ProductService extends BaseService<Product> {
     } as FindManyOptions<Product>);
   }
 
-  async getTopSellingProducts(
-    companyId: string,
-  ): Promise<TopSellingProduct[] | string> {
+  async getTopSellingProducts(companyId: string): Promise<TopSellingProduct[]> {
     console.log('BEST SELLERS');
     const result = await this.orderItemsRepo
       .createQueryBuilder('oi')
@@ -51,7 +49,7 @@ export class ProductService extends BaseService<Product> {
       .orderBy('SUM(oi.quantity)', 'DESC')
       .getRawMany<TopSellingProduct>();
 
-    return result.length > 0 ? result : 'No bestsellers yet';
+    return result.length > 0 ? result : [];
   }
 
   async create(user: AuthUser, dto: CreateProductInput) {

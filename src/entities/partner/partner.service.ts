@@ -33,16 +33,19 @@ export class PartnerService extends BaseService<Partner> {
     } as FindManyOptions<Partner>);
   }
 
-  async getMostLoyalCustomer(): Promise<MostLoyalCustomer | null> {
+  async getMostLoyalCustomer(
+    companyId: string,
+  ): Promise<MostLoyalCustomer | null> {
     const result = await this.orderRepo
       .createQueryBuilder('o')
       .select('o.company_id', 'companyId')
       .addSelect('c.name', 'customerName')
       .addSelect('COUNT(o.id)', 'totalOrders')
       .innerJoin('partner', 'c', 'c.id = o.partner_id')
-      .where('o.type = :type', { type: 'delivery' })
+      .where('o.type = :type', { type: 'shipment' })
       .andWhere('o.deleted_at IS NULL')
       .andWhere('c.deleted_at IS NULL')
+      .andWhere('c.companyId = :companyId', { companyId })
       .groupBy('o.company_id')
       .addGroupBy('c.name')
       .orderBy('COUNT(o.id)', 'DESC')

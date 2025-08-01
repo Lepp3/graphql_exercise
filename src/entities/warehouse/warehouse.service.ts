@@ -61,7 +61,9 @@ export class WarehouseService extends BaseService<Warehouse> {
     return this.repo.save(warehouse);
   }
 
-  async getHighestStockPerWarehouse(): Promise<HighestStockPerWarehouse[]> {
+  async getHighestStockPerWarehouse(
+    companyId: string,
+  ): Promise<HighestStockPerWarehouse[]> {
     const subQuery = this.orderRepo
       .createQueryBuilder('o')
       .select('w.name', 'warehouseName')
@@ -83,12 +85,13 @@ export class WarehouseService extends BaseService<Warehouse> {
       .where('o.deletedAt IS NULL')
       .andWhere('oi.deletedAt IS NULL')
       .andWhere('p.deletedAt IS NULL')
+      .andWhere('w.companyId = :companyId', { companyId })
+      .andWhere('p.companyId = :companyId', { companyId })
       .groupBy('w.name')
       .addGroupBy('p.name');
 
     const result = await this.orderRepo
       .createQueryBuilder()
-
       .select('s."warehouseName"', 'warehouseName')
       .distinctOn(['s."warehouseName"'])
       .addSelect('s."productName"', 'nameOfProduct')

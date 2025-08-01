@@ -9,7 +9,11 @@ import { Repository, FindManyOptions } from 'typeorm';
 import { Order, OrderType } from './order.entity';
 import { BaseService } from 'src/common/base.service';
 import { z } from 'zod';
-import { CreateOrderSchema, UpdateOrderSchema } from './order.schema';
+import {
+  CreateOrderSchema,
+  UpdateOrderSchema,
+  CreateTransferSchema,
+} from './order.schema';
 import { AuthUser } from 'src/decorators/currentUser.decorator';
 import { OrderItems } from '../orderItems/orderItems.entity';
 import { WarehouseService } from '../warehouse/warehouse.service';
@@ -20,6 +24,7 @@ import { InvoiceService } from '../invoice/invoice.service';
 
 export type CreateOrderInput = z.infer<typeof CreateOrderSchema>;
 export type UpdateOrderInput = z.infer<typeof UpdateOrderSchema>;
+export type TransferListInput = z.infer<typeof CreateTransferSchema>;
 
 @Injectable()
 export class OrderService extends BaseService<Order> {
@@ -57,7 +62,7 @@ export class OrderService extends BaseService<Order> {
     return this.repo.find({ where: { userId } });
   }
 
-  async generateInvoiceNumber(): Promise<string> {
+  private async generateInvoiceNumber(): Promise<string> {
     const year = new Date().getFullYear();
     let increment = 1;
     let invoiceNumber: string;
@@ -67,6 +72,9 @@ export class OrderService extends BaseService<Order> {
       invoiceNumber = `INV-${year}-${increment.toString().padStart(4, '0')}`;
       exists = !!(await this.invoiceService.findByInvoiceNumber(invoiceNumber));
       increment++;
+      if (increment > 100000) {
+        throw new Error('Unable to generate unique invoice number');
+      }
     } while (exists);
 
     return invoiceNumber;
@@ -74,45 +82,31 @@ export class OrderService extends BaseService<Order> {
 
   async createOrderWithItems(user: AuthUser, dto: CreateOrderInput) {
     const { items, ...orderData } = dto;
-    // const warehouse = await this.warehouseService.getById(
-    //   dto.warehouseId,
-    //   user.companyId,
-    // );
-    // const partner = await this.partnerService.getById(
-    //   dto.partnerId,
-    //   user.companyId,
-    // );
-    // if (
-    //   (partner.partnerType === PartnerType.CUSTOMER &&
-    //     dto.type === OrderType.DELIVERY) ||
-    //   (partner.partnerType === PartnerType.SUPPLIER &&
-    //     dto.type === OrderType.SHIPMENT)
-    // ) {
-    //   return new ConflictException(
-    //     'Partner type incompatible with order type!',
-    //   );
-    // }
 
-    // const products = await Promise.all(
-    //   items.map((item) =>
-    //     this.productService.getById(item.productId, user.companyId),
-    //   ),
-    // );
+    if (dto.partnerId) {
+      await this.validatePartnerForOrder(
+        dto.partnerId,
+        dto.type,
+        user.companyId,
+      );
+    }
 
-    // products.forEach((product) => {
-    //   if (product.type !== warehouse.supportType) {
-    //     throw new ConflictException(
-    //       `${product.name} of type ${product.type} does not match warehouse support type!`,
-    //     );
-    //   }
-    // });
-
-    await this.validatePartnerForOrder(dto.partnerId, dto.type, user.companyId);
     await this.validateItemsForWarehouse(
       dto.warehouseId,
       items,
       user.companyId,
     );
+
+    if (dto.type === OrderType.SHIPMENT) {
+      for (const { productId, quantity } of items) {
+        const available = await this.getStockLevel(dto.warehouseId, productId);
+        if (available < quantity) {
+          throw new ConflictException(
+            `Insufficient stock for product ${productId}: available ${available}, requested ${quantity}`,
+          );
+        }
+      }
+    }
 
     const order = this.repo.create(orderData);
     order.companyId = user.companyId;
@@ -128,13 +122,15 @@ export class OrderService extends BaseService<Order> {
 
     await this.orderItemsRepo.save(orderItems);
 
-    const invoiceNumber = await this.generateInvoiceNumber();
-    await this.invoiceService.create(user, {
-      date: order.date,
-      orderId: order.id,
-      invoiceNumber,
-      userId: user.id,
-    });
+    if (dto.partnerId && (dto.type = OrderType.SHIPMENT)) {
+      const invoiceNumber = await this.generateInvoiceNumber();
+      await this.invoiceService.create(user, {
+        date: order.date,
+        orderId: order.id,
+        invoiceNumber,
+        userId: user.id,
+      });
+    }
 
     return order;
   }
@@ -206,6 +202,57 @@ export class OrderService extends BaseService<Order> {
     return existingOrder;
   }
 
+  async transferItems(user: AuthUser, dto: TransferListInput) {
+    const warehouseFrom = await this.warehouseService.getById(
+      dto.warehouseFrom,
+      user.companyId,
+    );
+
+    const warehouseTo = await this.warehouseService.getById(
+      dto.warehouseTo,
+      user.companyId,
+    );
+
+    if (warehouseFrom.supportType !== warehouseTo.supportType) {
+      throw new ConflictException(
+        `${warehouseFrom.name} has different support type than ${warehouseTo.name}`,
+      );
+    }
+
+    await this.validateItemsForWarehouse(
+      dto.warehouseFrom,
+      dto.items,
+      user.companyId,
+    );
+
+    await this.validateItemsForWarehouse(
+      dto.warehouseTo,
+      dto.items,
+      user.companyId,
+    );
+
+    const shipmentDto: CreateOrderInput = {
+      warehouseId: dto.warehouseFrom,
+      partnerId: null,
+      type: OrderType.SHIPMENT,
+      date: new Date(),
+      items: dto.items,
+    };
+
+    const deliveryDto: CreateOrderInput = {
+      warehouseId: dto.warehouseTo,
+      partnerId: null,
+      type: OrderType.DELIVERY,
+      date: new Date(),
+      items: dto.items,
+    };
+
+    const fromOrder = await this.createOrderWithItems(user, shipmentDto);
+    const toOrder = await this.createOrderWithItems(user, deliveryDto);
+
+    return { fromOrder, toOrder };
+  }
+
   private async validatePartnerForOrder(
     partnerId: string | null,
     type: OrderType,
@@ -242,5 +289,33 @@ export class OrderService extends BaseService<Order> {
         );
       }
     });
+  }
+
+  private async getStockLevel(
+    warehouseId: string,
+    productId: string,
+  ): Promise<number> {
+    const raw = await this.repo
+      .createQueryBuilder('o')
+      .select(
+        `SUM(
+            CASE
+              WHEN o.type = 'delivery' THEN oi.quantity
+              WHEN o.type = 'shipment' THEN -oi.quantity
+              ELSE 0
+            END
+          )`,
+        'stockLevel',
+      )
+      .innerJoin('order_items', 'oi', 'oi.order_id = o.id')
+      .where('o.warehouse_id = :wid', { wid: warehouseId })
+      .andWhere('oi.product_id = :pid', { pid: productId })
+      .andWhere('o.deletedAt IS NULL')
+      .andWhere('oi.deletedAt IS NULL')
+      .getRawOne<{ stockLevel: string }>();
+
+    const stockStr = raw?.stockLevel ?? '0';
+
+    return Number(stockStr);
   }
 }
