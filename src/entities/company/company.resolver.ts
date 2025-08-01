@@ -39,8 +39,8 @@ export class CompanyResolver extends BaseResolver<CompanyType> {
   }
 
   @Query(() => CompanyType, { name: 'getCompanyById' })
-  override getById(@CurrentUser() user: AuthUser, @Args('id') id: string) {
-    return super.getById(user, id);
+  async getCompanyById(@CurrentUser() user: AuthUser, @Args('id') id: string) {
+    return this.companyService.getCompanyById(user, id);
   }
 
   @Mutation(() => CompanyType, { name: 'updateCompany' })

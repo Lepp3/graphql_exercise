@@ -273,7 +273,6 @@ input CreateWarehouseType {
 input UpdateWarehouseType {
   id: ID!
   name: String
-  supportType: ProductSupportType
 }
 
 input CreateProductType {

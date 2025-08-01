@@ -88,12 +88,13 @@ export class WarehouseService extends BaseService<Warehouse> {
 
     const result = await this.orderRepo
       .createQueryBuilder()
+
       .select('s."warehouseName"', 'warehouseName')
+      .distinctOn(['s."warehouseName"'])
       .addSelect('s."productName"', 'nameOfProduct')
       .addSelect('s."stockLevel"', 'maxProduct')
       .from(`(${subQuery.getQuery()})`, 's')
       .setParameters(subQuery.getParameters())
-      .distinctOn(['s."warehouseName"'])
       .orderBy('s."warehouseName"', 'ASC')
       .addOrderBy('s."stockLevel"', 'DESC')
       .getRawMany<HighestStockPerWarehouse>();

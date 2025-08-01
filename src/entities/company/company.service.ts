@@ -1,6 +1,10 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, FindOptionsWhere } from 'typeorm';
 import { Company } from './company.entity';
 import { z } from 'zod';
 import { CreateCompanySchema, UpdateCompanySchema } from './company.schema';
@@ -15,6 +19,19 @@ export type UpdateCompanyInput = z.infer<typeof UpdateCompanySchema>;
 export class CompanyService extends BaseService<Company> {
   constructor(@InjectRepository(Company) repo: Repository<Company>) {
     super(repo);
+  }
+
+  async getCompanyById(user: AuthUser, id: string): Promise<Company> {
+    if (user.companyId !== id) {
+      throw new NotFoundException('Company not found!');
+    }
+    const company = await this.repo.findOne({
+      where: { id } as FindOptionsWhere<Company>,
+    });
+    if (!company)
+      throw new NotFoundException(`${this.repo.metadata.tableName} not found`);
+
+    return company;
   }
 
   async create(dto: CreateCompanyInput): Promise<Company> {
