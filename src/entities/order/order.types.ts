@@ -11,16 +11,16 @@ export class OrderType extends BaseType {
   @Field(() => Date, { nullable: true })
   date: Date;
 
-  @Field()
+  @Field(() => ID)
   companyId: string;
 
-  @Field()
+  @Field(() => ID)
   userId: string;
 
   @Field(() => ID, { nullable: true })
   partnerId?: string | null;
 
-  @Field()
+  @Field(() => ID)
   warehouseId: string;
 }
 
@@ -67,7 +67,7 @@ export class UpdateOrderType {
 }
 
 @InputType()
-export class TransferListType {
+export class TransferProductsInput {
   @Field(() => ID)
   warehouseFrom: string;
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindManyOptions } from 'typeorm';
 import { Warehouse } from './warehouse.entity';
@@ -11,6 +11,8 @@ import {
 import { Order } from '../order/order.entity';
 import { validateUniqueField } from 'src/common/validators/uniqueName.validator';
 import { AuthUser } from 'src/decorators/currentUser.decorator';
+import { OrderType } from '../order/order.entity';
+import { PartnerType } from '../partner/partner.entity';
 
 export type CreateWarehouseInput = z.infer<typeof CreateWarehouseSchema>;
 export type UpdateWarehouseInput = z.infer<typeof UpdateWarehouseSchema>;
@@ -55,6 +57,9 @@ export class WarehouseService extends BaseService<Warehouse> {
         { name: dto.name },
         'Warehouse name',
       );
+    }
+    if (dto.supportType && dto.supportType !== warehouse.supportType) {
+      await this.checkForDeliveries(id);
     }
     Object.assign(warehouse, dto);
     warehouse.modifiedBy = user.id;
@@ -103,5 +108,22 @@ export class WarehouseService extends BaseService<Warehouse> {
       .getRawMany<HighestStockPerWarehouse>();
 
     return result;
+  }
+
+  private async checkForDeliveries(warehouseId: string) {
+    const count = await this.orderRepo
+      .createQueryBuilder('o')
+      .innerJoin('partner', 'p', 'p.id = o.partner_id')
+      .where('o.warehouse_id = :wid', { wid: warehouseId })
+      .andWhere('o.type = :delivery', { delivery: OrderType.DELIVERY })
+      .andWhere('p.partnerType = :ptype', { ptype: PartnerType.SUPPLIER })
+      .andWhere('o.deletedAt IS NULL')
+      .getCount();
+
+    if (count > 0) {
+      throw new ConflictException(
+        'Cannot change warehouse support type: there are existing supplier deliveries.',
+      );
+    }
   }
 }

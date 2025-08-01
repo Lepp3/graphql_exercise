@@ -12,7 +12,12 @@ import { InvoiceService } from '../invoice/invoice.service';
 import { WarehouseService } from '../warehouse/warehouse.service';
 import { PartnerService } from '../partner/partner.service';
 import { UserService } from '../user/user.service';
-import { OrderType, CreateOrderType, UpdateOrderType } from './order.types';
+import {
+  OrderType,
+  CreateOrderType,
+  UpdateOrderType,
+  TransferProductsInput,
+} from './order.types';
 import {
   ResolveField,
   Resolver,
@@ -83,6 +88,15 @@ export class OrderResolver extends BaseResolver<Order> {
   @Roles(UserRole.OWNER, UserRole.OPERATOR)
   override softDelete(@CurrentUser() user: AuthUser, @Args('id') id: string) {
     return super.softDelete(user, id);
+  }
+
+  @Mutation(() => [OrderType], { name: 'transferProducts' })
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
+  transferProducts(
+    @CurrentUser() user: AuthUser,
+    @Args('input') input: TransferProductsInput,
+  ) {
+    return this.orderService.transferItems(user, input);
   }
 
   @ResolveField(() => [InvoiceType])

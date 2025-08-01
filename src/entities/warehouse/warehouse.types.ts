@@ -43,4 +43,7 @@ export class UpdateWarehouseType {
 
   @Field({ nullable: true })
   name?: string;
+
+  @Field(() => SupportTypeEnum, { nullable: true })
+  supportType?: SupportTypeEnum;
 }

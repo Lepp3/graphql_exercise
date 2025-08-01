@@ -7,6 +7,4 @@ export const CreateWarehouseSchema = z.object({
   supportType: z.enum(SupportType),
 });
 
-export const UpdateWarehouseSchema = CreateWarehouseSchema.partial().omit({
-  supportType: true,
-});
+export const UpdateWarehouseSchema = CreateWarehouseSchema.partial();

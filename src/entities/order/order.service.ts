@@ -203,6 +203,9 @@ export class OrderService extends BaseService<Order> {
   }
 
   async transferItems(user: AuthUser, dto: TransferListInput) {
+    if (dto.warehouseFrom === dto.warehouseTo) {
+      throw new ConflictException('Cannot transfer to same warehouse');
+    }
     const warehouseFrom = await this.warehouseService.getById(
       dto.warehouseFrom,
       user.companyId,
@@ -230,6 +233,7 @@ export class OrderService extends BaseService<Order> {
       dto.items,
       user.companyId,
     );
+    // izbqgvam dabal fetch i gaz : )
 
     const shipmentDto: CreateOrderInput = {
       warehouseId: dto.warehouseFrom,
@@ -250,7 +254,7 @@ export class OrderService extends BaseService<Order> {
     const fromOrder = await this.createOrderWithItems(user, shipmentDto);
     const toOrder = await this.createOrderWithItems(user, deliveryDto);
 
-    return { fromOrder, toOrder };
+    return [fromOrder, toOrder];
   }
 
   private async validatePartnerForOrder(

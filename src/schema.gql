@@ -65,10 +65,10 @@ type OrderType {
   modifiedBy: String
   type: OrderCategory!
   date: DateTime
-  companyId: String!
-  userId: String!
+  companyId: ID!
+  userId: ID!
   partnerId: ID
-  warehouseId: String!
+  warehouseId: ID!
   invoices: [InvoiceType!]!
   orderItems: [OrderItemsType!]!
   user: UserType!
@@ -216,6 +216,7 @@ type Mutation {
   updateOrder(id: String!, input: UpdateOrderType!): OrderType!
   deleteOrder(id: String!): Boolean!
   softDeleteOrder(id: String!): Boolean!
+  transferProducts(input: TransferProductsInput!): [OrderType!]!
   createOrderItems(input: CreateOrderItemsWithOrderIdType!): OrderItemsType!
   updateOrderItems(id: String!, input: UpdateOrderItemsType!): OrderItemsType!
   deleteOrderItems(id: String!): Boolean!
@@ -273,6 +274,7 @@ input CreateWarehouseType {
 input UpdateWarehouseType {
   id: ID!
   name: String
+  supportType: ProductSupportType
 }
 
 input CreateProductType {
@@ -315,6 +317,12 @@ input UpdateOrderType {
   warehouseId: ID
   partnerId: ID
   items: [CreateOrderItemsType!]
+}
+
+input TransferProductsInput {
+  warehouseFrom: ID!
+  warehouseTo: ID!
+  items: [CreateOrderItemsType!]!
 }
 
 input CreateOrderItemsWithOrderIdType {
