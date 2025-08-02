@@ -21,6 +21,7 @@ import { PartnerService } from '../partner/partner.service';
 import { PartnerType } from '../partner/partner.entity';
 import { ProductService } from '../product/product.service';
 import { InvoiceService } from '../invoice/invoice.service';
+import { SupportType } from '../warehouse/warehouse.entity';
 
 export type CreateOrderInput = z.infer<typeof CreateOrderSchema>;
 export type UpdateOrderInput = z.infer<typeof UpdateOrderSchema>;
@@ -82,6 +83,10 @@ export class OrderService extends BaseService<Order> {
 
   async createOrderWithItems(user: AuthUser, dto: CreateOrderInput) {
     const { items, ...orderData } = dto;
+    const warehouse = await this.warehouseService.getById(
+      dto.warehouseId,
+      user.companyId,
+    );
 
     if (dto.partnerId) {
       await this.validatePartnerForOrder(
@@ -92,7 +97,7 @@ export class OrderService extends BaseService<Order> {
     }
 
     await this.validateItemsForWarehouse(
-      dto.warehouseId,
+      warehouse.supportType,
       items,
       user.companyId,
     );
@@ -144,17 +149,24 @@ export class OrderService extends BaseService<Order> {
     const existingOrder = await this.getById(id, user.companyId);
 
     const newType = type ?? existingOrder.type;
+    if (warehouseId && warehouseId !== existingOrder.warehouseId) {
+      const newWarehouse = await this.warehouseService.getById(
+        warehouseId,
+        user.companyId,
+      );
+
+      if (items && Array.isArray(items)) {
+        await this.validateItemsForWarehouse(
+          newWarehouse.supportType,
+          items,
+          user.companyId,
+        );
+      }
+    }
     const newWarehouseId = warehouseId ?? existingOrder.warehouseId;
     const newPartnerId = partnerId ?? existingOrder.partnerId;
 
     await this.validatePartnerForOrder(newPartnerId, newType, user.companyId);
-    if (items && Array.isArray(items)) {
-      await this.validateItemsForWarehouse(
-        newWarehouseId,
-        items,
-        user.companyId,
-      );
-    }
 
     existingOrder.type = newType;
     existingOrder.partnerId = newPartnerId;
@@ -223,13 +235,13 @@ export class OrderService extends BaseService<Order> {
     }
 
     await this.validateItemsForWarehouse(
-      dto.warehouseFrom,
+      warehouseFrom.supportType,
       dto.items,
       user.companyId,
     );
 
     await this.validateItemsForWarehouse(
-      dto.warehouseTo,
+      warehouseTo.supportType,
       dto.items,
       user.companyId,
     );
@@ -275,19 +287,15 @@ export class OrderService extends BaseService<Order> {
   }
 
   private async validateItemsForWarehouse(
-    warehouseId: string,
+    warehouseSupportType: SupportType,
     items: Array<{ productId: string }>,
     companyId: string,
   ) {
-    const warehouse = await this.warehouseService.getById(
-      warehouseId,
-      companyId,
-    );
     const products = await Promise.all(
       items.map((i) => this.productService.getById(i.productId, companyId)),
     );
     products.forEach((product) => {
-      if (product.type !== warehouse.supportType) {
+      if (product.type !== warehouseSupportType) {
         throw new ConflictException(
           `${product.name} of type ${product.type} does not match warehouse support type!`,
         );
