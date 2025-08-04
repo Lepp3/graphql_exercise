@@ -330,4 +330,51 @@ export class OrderService extends BaseService<Order> {
 
     return Number(stockStr);
   }
+
+  async getStockLevelsByWarehouse(
+    warehouseId: string,
+  ): Promise<{ productId: string; productName: string; stockLevel: number }[]> {
+    const raws = await this.repo
+      .createQueryBuilder('o')
+      .select('oi.product_id', 'productId')
+      .addSelect('p.name', 'productName')
+      .addSelect(
+        `SUM(
+        CASE
+          WHEN o.type = 'delivery' THEN oi.quantity
+          WHEN o.type = 'shipment' THEN -oi.quantity
+          ELSE 0
+        END
+      )`,
+        'stockLevel',
+      )
+      .innerJoin('order_items', 'oi', 'oi.order_id = o.id')
+      .innerJoin('product', 'p', 'p.id = oi.product_id')
+      .where('o.warehouse_id = :wid', { wid: warehouseId })
+      .andWhere('o.deletedAt IS NULL')
+      .andWhere('oi.deletedAt IS NULL')
+      .andWhere('p.deletedAt IS NULL')
+      .groupBy('oi.product_id')
+      .addGroupBy('p.name')
+      .having(
+        `SUM(
+        CASE
+          WHEN o.type = 'delivery' THEN oi.quantity
+          WHEN o.type = 'shipment' THEN -oi.quantity
+          ELSE 0
+        END
+      ) > 0`,
+      )
+      .getRawMany<{
+        productId: string;
+        productName: string;
+        stockLevel: string;
+      }>();
+
+    return raws.map((r) => ({
+      productId: r.productId,
+      productName: r.productName,
+      stockLevel: Number(r.stockLevel),
+    }));
+  }
 }

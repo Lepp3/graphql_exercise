@@ -119,6 +119,7 @@ type WarehouseType {
   companyId: String!
   company: CompanyType!
   orders: [OrderType!]!
+  stockLevels: [StockLevelType!]!
 }
 
 """The type of products a warehouse supports"""
@@ -131,6 +132,12 @@ type HighestStockPerWarehouseType {
   warehouseName: String!
   nameOfProduct: String!
   maxProduct: Float!
+}
+
+type StockLevelType {
+  productId: String!
+  productName: String!
+  stockLevel: Float!
 }
 
 type ProductType {

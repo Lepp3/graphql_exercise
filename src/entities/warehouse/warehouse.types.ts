@@ -47,3 +47,15 @@ export class UpdateWarehouseType {
   @Field(() => SupportTypeEnum, { nullable: true })
   supportType?: SupportTypeEnum;
 }
+
+@ObjectType()
+export class StockLevelType {
+  @Field()
+  productId: string;
+
+  @Field()
+  productName: string;
+
+  @Field(() => Number)
+  stockLevel: number;
+}

@@ -13,6 +13,7 @@ import {
   WarehouseType,
   CreateWarehouseType,
   UpdateWarehouseType,
+  StockLevelType,
 } from './warehouse.types';
 import { CurrentUser, AuthUser } from 'src/decorators/currentUser.decorator';
 import { CompanyService } from '../company/company.service';
@@ -93,5 +94,12 @@ export class WarehouseResolver extends BaseResolver<WarehouseType> {
   @ResolveField(() => [OrderType])
   async orders(@Parent() warehouse: WarehouseType): Promise<OrderType[]> {
     return this.orderService.findByWarehouseId(warehouse.id);
+  }
+
+  @ResolveField(() => [StockLevelType], { name: 'stockLevels' })
+  async stockLevels(
+    @Parent() warehouse: WarehouseType,
+  ): Promise<StockLevelType[]> {
+    return this.orderService.getStockLevelsByWarehouse(warehouse.id);
   }
 }
